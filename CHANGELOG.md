@@ -20,6 +20,7 @@ Semver retroactivo. Política:
 ### Changed
 
 - Langfuse stack actualizado a `3.173.0` (web + worker pineados a versión exacta — bugfixes de seguridad SSRF + rate-limit, sin migraciones de schema). Aplicado en DEV + PRO.
+- Alineación de devDependencies con el resto del ecosistema Atlax 360 (kairos / orvian / harvest / atlax-claude-dashboard): `zod` `^3.24.0` → `^4.4.3`, `typescript` `^5.4.0` → `^5.9.3`, `bun-types` `^1.3.13` → `^1.3.14`. Sin cambios de código requeridos — el `zod-adapter` usa dynamic import con tipo opaco (`ZodSchema = unknown`) y solo invoca APIs estables entre v3 y v4 (`object/string/number/boolean/array/enum/union`). Validación: typecheck limpio + 1054 tests + smoke MCP E2E 8/8 verde contra Langfuse local.
 
 ---
 
