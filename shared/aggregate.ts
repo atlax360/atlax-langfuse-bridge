@@ -9,6 +9,20 @@
 import { readFileSync } from "node:fs";
 import { getPricing } from "./model-pricing";
 
+/**
+ * Redondeo defensivo de un coste estimado (USD) para campos de DISPLAY/reporte.
+ *
+ * ADR-018: el coste se mantiene en `number` (float) internamente —el dominio es
+ * observabilidad FinOps tolerante (`COST_EPSILON`), no contabilidad transaccional.
+ * Pero al EXPONER el coste en un resumen humano (output de trace, reporte) se
+ * redondea a 2 decimales (céntimos de USD) para no filtrar ruido IEEE-754
+ * (`0.30000000000000004`). NO usar en `costDetails` que van a Langfuse, donde se
+ * conserva la precisión de microdólares (.toFixed(6/8)).
+ */
+export function roundCostDisplay(cost: number): number {
+  return Math.round(cost * 100) / 100;
+}
+
 export interface AggregateResult {
   turns: number;
   totalCost: number;

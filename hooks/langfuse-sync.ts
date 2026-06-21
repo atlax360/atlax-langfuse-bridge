@@ -15,7 +15,7 @@ import { randomUUID } from "node:crypto";
 import * as os from "node:os";
 import * as path from "node:path";
 import { getPricing } from "../shared/model-pricing";
-import { aggregateLines } from "../shared/aggregate";
+import { aggregateLines, roundCostDisplay } from "../shared/aggregate";
 import { emitDegradation } from "../shared/degradation";
 import { isSafeHost } from "../shared/langfuse-client";
 import { SAFE_SID_RE, safeFilePath } from "../shared/validation";
@@ -422,7 +422,11 @@ export async function processStopEvent(raw: string): Promise<void> {
           costSource: "estimated",
         },
         input: { turns: turnCount },
-        output: { estimatedCostUSD: totalCost },
+        // ADR-018: redondeo defensivo a 2 decimales en el campo de DISPLAY del
+        // trace (resumen visible en la UI de Langfuse). El coste preciso vive en
+        // costDetails de cada generation (.toFixed(8)); aquí evitamos exponer
+        // ruido IEEE-754 en el resumen humano.
+        output: { estimatedCostUSD: roundCostDisplay(totalCost) },
       },
     },
   ];
