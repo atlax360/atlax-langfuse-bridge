@@ -38,18 +38,16 @@ git status --short                     # limpio (0 files)
 git remote get-url origin              # git@github.com:atlax360/... (entidad Atlax360 ✅)
 git config user.email                  # jgcalvo@atlax360.com
 
-# 3. Proyecto Linear destino: ¿existe ya "atlax-langfuse-bridge" o "Langfuse Bridge" en team ATL?
-#    list_projects → si NO existe, crearlo (save_project). La regla linear-mcp lo ubica en
-#    "Infra & Cockpit" NO está claro — langfuse-bridge es producto propio, NO infra del cockpit.
-#    DECISIÓN DE PRODUCTO (gate humano): ¿proyecto propio "Langfuse Bridge" o dentro de otro?
-#    PREGUNTAR a Joserra antes de poblar (la regla linear-mcp NO mapea este repo a un proyecto).
+# 3. Proyecto Linear destino: **"Langfuse Bridge"** (team ATL) — DECIDIDO por Joserra 2026-06-21.
+#    Proyecto PROPIO (NO dentro de "Infra & Cockpit"): es producto con 9 épicas/17 ADRs/roadmap S17-S24.
+#    list_projects → si NO existe "Langfuse Bridge", crearlo con save_project (team ATL,
+#    lead jgcalvo@atlax360.com). NO preguntar — el destino ya está fijado.
 
-# 4. No duplicar: list_issues del proyecto destino antes de poblar (por si hubo intake parcial).
+# 4. No duplicar: list_issues project="Langfuse Bridge" antes de poblar (por si hubo intake parcial).
 ```
 
-**Si alguna precondición falla → parar y resolver.** Especial atención al punto 3: el mapping
-carpeta→proyecto de `linear-mcp.md` NO incluye `atlax-langfuse-bridge` explícitamente → es una
-decisión de producto que debe confirmar Joserra (gate G0/G1).
+**Si alguna precondición falla → parar y resolver.** El destino Linear ya está DECIDIDO (punto 3:
+proyecto propio "Langfuse Bridge") → la sesión NO se detiene a preguntarlo; solo lo crea si no existe.
 
 ---
 
@@ -108,7 +106,7 @@ El intake está cerrado cuando, por output en conversación:
 1. ADRs nuevos: `ls docs/adr/ADR-0[2-9][0-9]-*.md docs/adr/ADR-018-*.md docs/adr/ADR-019-*.md 2>/dev/null | wc -l` → ≥1.
    (Formato REAL `ADR-NNN-slug.md` — verificado; NO usar `0NN-*.md`.)
 2. Scorecard de readiness escrito: `ls docs/intake/*EADINESS* docs/intake/*scorecard* 2>/dev/null` → ≥1.
-3. Proyecto Linear destino tiene épicas+PBIs poblados: `list_issues project="<destino>"` → N nuevas vs baseline.
+3. Proyecto "Langfuse Bridge" tiene épicas+PBIs poblados: `list_issues project="Langfuse Bridge"` → N nuevas vs baseline.
 4. Handoff a `/goal` en `docs/`.
 5. `git status` limpio, artefactos en rama `ATL-N-...` con PR.
 
@@ -121,7 +119,7 @@ El intake está cerrado cuando, por output en conversación:
 ## 5 · Condición `/goal` lista para pegar (sesión Atlax360, modo auto)
 
 ```
-/goal Intake brownfield de langfuse-bridge completo: `ls docs/adr/ADR-018-*.md docs/adr/ADR-019-*.md 2>/dev/null | wc -l` ≥1 con ADR nuevo, existe scorecard en docs/intake/, el proyecto destino en Linear Atlax360 tiene épicas+PBIs poblados (mostrar list_issues), y hay handoff a /goal en docs/ — o para tras 35 turnos
+/goal Intake brownfield de langfuse-bridge completo: `ls docs/adr/ADR-018-*.md docs/adr/ADR-019-*.md 2>/dev/null | wc -l` ≥1 con ADR nuevo, existe scorecard en docs/intake/, el proyecto "Langfuse Bridge" en Linear Atlax360 tiene épicas+PBIs poblados (mostrar list_issues project="Langfuse Bridge"), y hay handoff a /goal en docs/ — o para tras 35 turnos
 ```
 
 ---
@@ -132,10 +130,10 @@ El intake está cerrado cuando, por output en conversación:
 Lee docs/handoffs/2026-06-21-atlax-intake-langfuse-bridge-piloto.md y aplica sus precondiciones
 (§1) antes de tocar nada: verifica que ves el team Atlax360 (key ATL) en Linear —NO Semantia—,
 git main limpio en ~/work/atlax-langfuse-bridge, remote atlax360, identidad jgcalvo@atlax360.com.
-CRÍTICO §1.3: el proyecto Linear destino para langfuse-bridge NO está mapeado en linear-mcp.md —
-pregúntame qué proyecto usar (propio "Langfuse Bridge" o dentro de otro) ANTES de poblar.
-Confirmado, ejecuta /atlax-intake ~/work/atlax-langfuse-bridge --brownfield. Para en cada gate
-(G0/G1/G2) y pregúntame. Deriva TODO de artefactos (ground-truth), nunca de memoria. Aplica R26
+El proyecto Linear destino YA está fijado: **"Langfuse Bridge"** (proyecto propio, team ATL) —
+créalo con save_project si no existe, NO preguntes. Ejecuta /atlax-intake
+~/work/atlax-langfuse-bridge --brownfield. Para en los gates G1/G2 (batch de decisiones + aprobar
+poblado) y pregúntame. Deriva TODO de artefactos (ground-truth), nunca de memoria. Aplica R26
 sobre cada finding antes de poblar (S17-S21 están en docs, no en git — verifica qué ya está DONE).
 ```
 
@@ -143,7 +141,7 @@ sobre cada finding antes de poblar (S17-S21 están en docs, no en git — verifi
 
 ## 7 · Riesgos
 
-- **Proyecto Linear destino sin mapear** (§1.3) — decisión de producto, gate humano. NO asumir.
+- **Proyecto Linear destino** — fijado: "Langfuse Bridge" (proyecto propio). Crear con save_project si no existe.
 - **Gotcha dedup Linear** — solo `linear-atlax` activo en esa sesión.
 - **S17-S21 fuera de git** — el roadmap los describe pero el repo arrancó en S22. R26 antes de
   crear issues de sprints que quizá ya estén DONE (post-v1 backlog marca algunos).
