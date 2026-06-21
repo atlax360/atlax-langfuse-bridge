@@ -1,0 +1,2752 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';"
+    />
+    <title>atlax-langfuse-bridge · Evolución del proyecto · Atlax 360</title>
+    <style>
+      :root {
+        --bg: #08080f;
+        --bg-2: #0c0d18;
+        --v: #8b5cf6;
+        --c: #22d3ee;
+        --pk: #f472b6;
+        --ink: #eceefb;
+        --muted: #9aa0b8;
+        --faint: #686d86;
+        --line: rgba(255, 255, 255, 0.09);
+        --line-2: rgba(255, 255, 255, 0.06);
+        --glass: rgba(255, 255, 255, 0.035);
+        --glass-2: rgba(255, 255, 255, 0.055);
+        --green: #34d399;
+        --amber: #fbbf24;
+        --coral: #fb7185;
+        --blue: #60a5fa;
+        --orange: #ffa400;
+        --grad: linear-gradient(100deg, var(--v), var(--c));
+        --grad-3: linear-gradient(100deg, var(--pk), var(--v) 45%, var(--c));
+        --sans:
+          "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --mono:
+          ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+        --maxw: 1160px;
+        --nav-h: 66px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: var(--nav-h);
+      }
+      body {
+        font-family: var(--sans);
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: clip;
+        position: relative;
+      }
+      .bg-fx {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.5;
+        mix-blend-mode: screen;
+        will-change: transform;
+      }
+      .blob.b1 {
+        width: 52vw;
+        height: 52vw;
+        background: radial-gradient(circle, #6d3bff, transparent 70%);
+        top: -14vw;
+        left: -10vw;
+        animation: d1 26s ease-in-out infinite;
+      }
+      .blob.b2 {
+        width: 46vw;
+        height: 46vw;
+        background: radial-gradient(circle, #0fb6d6, transparent 70%);
+        top: 10vw;
+        right: -14vw;
+        animation: d2 30s ease-in-out infinite;
+      }
+      .blob.b3 {
+        width: 40vw;
+        height: 40vw;
+        background: radial-gradient(circle, #d6328f, transparent 72%);
+        bottom: -16vw;
+        left: 22vw;
+        opacity: 0.32;
+        animation: d3 34s ease-in-out infinite;
+      }
+      .grid-ov {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--line-2) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line-2) 1px, transparent 1px);
+        background-size: 64px 64px;
+        mask-image: radial-gradient(
+          ellipse 80% 60% at 50% 0%,
+          #000 30%,
+          transparent 75%
+        );
+      }
+      @keyframes d1 {
+        0%,
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(8vw, 6vw) scale(1.12);
+        }
+      }
+      @keyframes d2 {
+        0%,
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(-7vw, 8vw) scale(1.08);
+        }
+      }
+      @keyframes d3 {
+        0%,
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(6vw, -6vw) scale(1.1);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .blob {
+          animation: none !important;
+        }
+      }
+      .layer {
+        position: relative;
+        z-index: 1;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        height: var(--nav-h);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 clamp(1.2rem, 4vw, 3rem);
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+        border-bottom: 1px solid transparent;
+      }
+      header.solid {
+        background: rgba(8, 8, 15, 0.72);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--line);
+      }
+      header .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+      }
+      header .brand .k {
+        font-weight: 800;
+        font-size: 1.05rem;
+        letter-spacing: -0.01em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      header .brand .by {
+        font-size: 0.66rem;
+        color: var(--faint);
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+      nav.links {
+        display: flex;
+        gap: clamp(0.6rem, 1.5vw, 1.5rem);
+      }
+      nav.links a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      nav.links a:hover {
+        color: var(--ink);
+      }
+      @media (max-width: 920px) {
+        nav.links {
+          display: none;
+        }
+      }
+      .scrollbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 2px;
+        background: var(--grad);
+        z-index: 60;
+        width: 0;
+        box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
+      }
+
+      section {
+        padding: clamp(4rem, 8vw, 7rem) clamp(1.2rem, 4vw, 3rem);
+      }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        width: 100%;
+      }
+      .tint {
+        background: linear-gradient(
+          180deg,
+          transparent,
+          var(--bg-2) 50%,
+          transparent
+        );
+      }
+
+      .label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--mono);
+        font-size: 0.73rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--c);
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+      .label::before {
+        content: "";
+        width: 22px;
+        height: 1px;
+        background: var(--grad);
+      }
+      h2 {
+        font-size: clamp(1.9rem, 4vw, 2.9rem);
+        line-height: 1.06;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+        margin-bottom: 0.7rem;
+      }
+      .gt {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .lead {
+        font-size: clamp(1.02rem, 1.6vw, 1.32rem);
+        color: var(--muted);
+        max-width: 64ch;
+        margin-bottom: 2.4rem;
+      }
+      h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      p {
+        color: var(--muted);
+        font-size: clamp(0.94rem, 1.2vw, 1.05rem);
+      }
+      strong {
+        color: var(--ink);
+        font-weight: 650;
+      }
+      .mono {
+        font-family: var(--mono);
+      }
+
+      .grid {
+        display: grid;
+        gap: clamp(0.85rem, 1.5vw, 1.2rem);
+      }
+      .c2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .c3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .c4 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .split {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: clamp(1.4rem, 4vw, 3rem);
+        align-items: center;
+      }
+      @media (max-width: 880px) {
+        .c2,
+        .c3,
+        .c4,
+        .split {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--glass);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: clamp(1.05rem, 2vw, 1.5rem);
+        backdrop-filter: blur(8px);
+        transition:
+          transform 0.3s,
+          border-color 0.3s,
+          background 0.3s;
+      }
+      .card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(139, 92, 246, 0.4);
+        background: var(--glass-2);
+      }
+      .card.gline {
+        position: relative;
+      }
+      .card.gline::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 2px;
+        border-radius: 18px 18px 0 0;
+        background: var(--grad);
+      }
+      .card h3 {
+        margin-bottom: 0.35rem;
+      }
+      .card p {
+        font-size: 0.92rem;
+      }
+
+      .stat .n {
+        font-size: clamp(1.9rem, 4.2vw, 3.1rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .stat .n.plain {
+        background: none;
+        -webkit-text-fill-color: var(--ink);
+        color: var(--ink);
+      }
+      .stat .l {
+        font-size: 0.82rem;
+        color: var(--faint);
+        margin-top: 0.45rem;
+      }
+
+      ul.clean {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+      ul.clean li {
+        position: relative;
+        padding-left: 1.4rem;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+      ul.clean li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        background: var(--grad);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.5rem 0.65rem;
+        border-bottom: 1px solid var(--line-2);
+        color: var(--muted);
+        vertical-align: top;
+      }
+      th {
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+        font-family: var(--mono);
+      }
+      td strong,
+      td b {
+        color: var(--ink);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      td .mono {
+        color: var(--c);
+      }
+
+      .heat {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.7rem 2rem;
+      }
+      @media (max-width: 760px) {
+        .heat {
+          grid-template-columns: 1fr;
+        }
+      }
+      .feat {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .feat .name {
+        font-size: 0.9rem;
+        color: var(--ink);
+      }
+      .feat .bar {
+        grid-column: 1/-1;
+        height: 8px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+      }
+      .feat .bar > i {
+        display: block;
+        height: 100%;
+        border-radius: 5px;
+        width: 0;
+        transition: width 1.1s cubic-bezier(0.2, 0.7, 0.3, 1);
+      }
+      .feat .pc {
+        font-family: var(--mono);
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .legend {
+        display: flex;
+        gap: 1.3rem;
+        flex-wrap: wrap;
+        font-size: 0.83rem;
+        color: var(--muted);
+        margin-top: 1.2rem;
+      }
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .sw {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        display: inline-block;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-family: var(--mono);
+        font-size: 0.71rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .pill.g {
+        color: var(--green);
+        border-color: rgba(52, 211, 153, 0.4);
+      }
+      .pill.r {
+        color: var(--coral);
+        border-color: rgba(251, 113, 133, 0.4);
+      }
+      .pill.o {
+        color: #c4b5fd;
+        border-color: rgba(139, 92, 246, 0.4);
+      }
+      .pill.a {
+        color: var(--amber);
+        border-color: rgba(251, 191, 36, 0.4);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.6rem;
+      }
+
+      .frame {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #0e0f1a;
+        box-shadow:
+          0 24px 50px -28px rgba(0, 0, 0, 0.8),
+          0 0 0 1px rgba(139, 92, 246, 0.08);
+      }
+      .frame .bar {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.75rem;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid var(--line);
+      }
+      .frame .bar i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .frame .bar .u {
+        margin-left: 0.5rem;
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        color: var(--faint);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.12rem 0.6rem;
+      }
+      .frame img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .cap {
+        font-size: 0.84rem;
+        color: var(--muted);
+        margin-top: 0.6rem;
+      }
+      .note {
+        font-size: 0.84rem;
+        color: var(--muted);
+        border-left: 2px solid var(--amber);
+        padding-left: 0.85rem;
+        line-height: 1.55;
+      }
+
+      svg text {
+        fill: var(--faint);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+      svg .gl {
+        stroke: var(--line-2);
+        stroke-width: 1;
+        stroke-dasharray: 3 4;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(26px);
+        transition:
+          opacity 0.8s ease,
+          transform 0.8s ease;
+      }
+      .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+      /* ── hyperconnectivity graph animations ── */
+      @keyframes hgDraw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes hgFlow {
+        to {
+          stroke-dashoffset: -14;
+        }
+      }
+      @keyframes hgPop {
+        0% {
+          opacity: 0;
+          transform: scale(0);
+        }
+        70% {
+          transform: scale(1.18);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes hgFade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes hgSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      #hyperGraph .hg-link {
+        animation: hgDraw 0.9s ease forwards;
+      }
+      #hyperGraph .hg-flow {
+        animation: hgFlow 1.1s linear infinite;
+      }
+      #hyperGraph .hg-node {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: hgPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+      #hyperGraph .hg-label {
+        animation: hgFade 0.6s ease both;
+      }
+      #hyperGraph .hg-rings {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: hgSpin 90s linear infinite;
+      }
+      /* ── tooltip de hover ── */
+      .tip {
+        position: fixed;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(3px);
+        transition:
+          opacity 0.12s ease,
+          transform 0.12s ease;
+        background: rgba(13, 13, 24, 0.96);
+        border: 1px solid rgba(139, 92, 246, 0.45);
+        border-radius: 9px;
+        padding: 0.42rem 0.62rem;
+        font-size: 0.8rem;
+        color: var(--ink);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+        max-width: 250px;
+        line-height: 1.4;
+        white-space: nowrap;
+      }
+      .tip.on {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .tip b {
+        color: #fff;
+      }
+      .tip .tpc {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+      [data-tip] {
+        cursor: pointer;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .tip {
+          transition: none;
+        }
+        .reveal {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+        html {
+          scroll-behavior: auto;
+        }
+        #hyperGraph .hg-link,
+        #hyperGraph .hg-node,
+        #hyperGraph .hg-label,
+        #hyperGraph .hg-flow,
+        #hyperGraph .hg-rings {
+          animation: none !important;
+        }
+        #hyperGraph .hg-link {
+          stroke-dashoffset: 0 !important;
+        }
+        #hyperGraph .hg-flow {
+          display: none;
+        }
+      }
+
+      .hero {
+        min-height: calc(100dvh - var(--nav-h));
+        display: flex;
+        align-items: center;
+        position: relative;
+      }
+      .hero .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--mono);
+        font-size: 0.74rem;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        background: var(--glass);
+        margin-bottom: 1.8rem;
+      }
+      .hero .eyebrow .dotled {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 10px var(--green);
+      }
+      .hero h1 {
+        font-size: clamp(3.4rem, 12vw, 8.2rem);
+        font-weight: 850;
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+      }
+      .hero h1 .word {
+        background: var(--grad-3);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 200% auto;
+        animation: shimmer 8s linear infinite;
+      }
+      @keyframes shimmer {
+        to {
+          background-position: 200% center;
+        }
+      }
+      .hero .tag {
+        font-size: clamp(1.1rem, 2.1vw, 1.6rem);
+        color: var(--muted);
+        max-width: 40ch;
+        margin: 1.4rem 0 2.6rem;
+        line-height: 1.4;
+      }
+      .hero .tag b {
+        color: var(--ink);
+        font-weight: 650;
+      }
+      .hero .kpis {
+        display: grid;
+        grid-template-columns: repeat(4, auto);
+        gap: clamp(1.2rem, 3.5vw, 3rem);
+      }
+      @media (max-width: 760px) {
+        .hero .kpis {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.4rem;
+        }
+      }
+      .scrolldown {
+        position: absolute;
+        bottom: 1.4rem;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--faint);
+        font-size: 1.3rem;
+        animation: bob 1.9s ease-in-out infinite;
+      }
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translate(-50%, 0);
+        }
+        50% {
+          transform: translate(-50%, 9px);
+        }
+      }
+
+      /* timeline */
+      .tl {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .tl .ph {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.9rem;
+        align-items: start;
+        padding: 0.55rem 0;
+        border-bottom: 1px solid var(--line-2);
+      }
+      .tl .ph:last-child {
+        border-bottom: none;
+      }
+      .tl .ph .num {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--bg);
+        background: var(--grad);
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+      }
+      .tl .ph .b h3 {
+        font-size: 0.98rem;
+        display: inline;
+      }
+      .tl .ph .b .art {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--faint);
+      }
+      .tl .ph .b p {
+        font-size: 0.9rem;
+        margin-top: 0.1rem;
+      }
+
+      /* hyperconnectivity */
+      .hyper {
+        position: relative;
+      }
+      .hyper svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .cmp {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: clamp(1rem, 3vw, 2rem);
+        align-items: stretch;
+      }
+      @media (max-width: 820px) {
+        .cmp {
+          grid-template-columns: 1fr;
+        }
+        .cmp .vs {
+          display: none;
+        }
+      }
+      .cmp .vs {
+        display: grid;
+        place-items: center;
+        font-family: var(--mono);
+        color: var(--faint);
+        font-size: 1.4rem;
+      }
+      .cmp .big {
+        font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 2.4rem clamp(1.2rem, 4vw, 3rem);
+        font-size: 0.82rem;
+        color: var(--faint);
+      }
+      footer .wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      footer .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .closing {
+        font-size: clamp(1.5rem, 3.2vw, 2.5rem);
+        font-weight: 750;
+        color: var(--ink);
+        max-width: 24ch;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-fx">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+      <div class="grid-ov"></div>
+    </div>
+    <div class="scrollbar" id="scrollbar"></div>
+
+    <div class="layer">
+      <header id="nav">
+        <div class="brand">
+          <span class="k">Langfuse Bridge</span
+          ><span class="by"
+            >by
+            <svg viewBox="0 0 286 108" height="26" role="img" aria-label="Atlax 360" style="vertical-align: middle"><polygon points="10,70 62,70 36,16" fill="#F39200" /><polygon points="170,70 222,70 196,16" fill="#FFA400" /><text x="64" y="70" style="font-size:66px;font-weight:800;fill:#c4c9da;font-family:Inter,system-ui,sans-serif;letter-spacing:-2px">TL</text><text x="224" y="70" style="font-size:66px;font-weight:800;fill:#c4c9da;font-family:Inter,system-ui,sans-serif;letter-spacing:-2px">X</text><text x="74" y="100" style="font-size:30px;font-weight:600;fill:#f39200;font-family:Inter,system-ui,sans-serif;letter-spacing:6px">360</text></svg></span
+          >
+        </div>
+        <nav class="links">
+          <a href="#kairos">Producto</a>
+          <a href="#evolucion">Evolución</a>
+          <a href="#metodo">Método</a>
+          <a href="#conectividad">Conectividad</a>
+          <a href="#tooling">Tooling</a>
+          <a href="#metricas">Métricas</a>
+          <a href="#coste">Esfuerzo</a>
+        </nav>
+      </header>
+
+      <!-- HERO -->
+      <section class="hero" id="inicio">
+        <div class="wrap">
+          <div class="eyebrow">
+            <span class="dotled"></span> En producción · Comité ejecutivo ·
+            Junio 2026
+          </div>
+          <h1><span class="word">Langfuse Bridge</span></h1>
+          <p class="tag">
+            La plataforma de procesos corporativos con IA agéntica — y la prueba
+            de <b>cómo Atlax 360 construye</b>.
+          </p>
+          <div class="kpis">
+            <div class="stat"><div class="n" data-count="108">0</div><div class="l">PRs mergeados<br />en 16 días activos</div></div>
+            <div class="stat"><div class="n" data-count="1062">0</div><div class="l">tests<br />(0 fallos)</div></div>
+            <div class="stat"><div class="n plain" data-count="20">0</div><div class="l">ADRs<br />documentados</div></div>
+            <div class="stat"><div class="n plain" data-count="15">0</div><div class="l">invariantes<br />(I-1..I-15)</div></div>
+          </div>
+        </div>
+        <div class="scrolldown">↓</div>
+      </section>
+
+      <!-- QUÉ ES -->
+      <section id="kairos">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Contexto</div>
+            <h2>Qué es atlax-langfuse-bridge <span class="gt">y por qué importa</span></h2>
+            <p class="lead">
+              Torre de observabilidad FinOps del consumo de Claude Code en Atlax360. Tres piezas coordinadas: hook Stop que agrega usage del JSONL al cerrar sesión, reconciler cron (systemd, cada 15 min) que detecta drift y re-ejecuta el hook, y stack Langfuse v3 self-hosted en GCP PRO. Más LiteLLM gateway, MCP server y browser extension.
+            </p>
+          </div>
+          <div class="split reveal">
+            <div class="grid c3">
+              <div class="card">
+                <h3>Langfuse v3</h3>
+                <p>Observabilidad LLM self-hosted (PRO en GCP)</p>
+              </div>
+              <div class="card">
+                <h3>LiteLLM Gateway</h3>
+                <p>Virtual keys + callback → Langfuse</p>
+              </div>
+              <div class="card gline">
+                <h3 class="gt">atlax-langfuse-bridge</h3>
+                <p>Hook + reconciler + stack + MCP</p>
+              </div>
+            </div>
+            <div class="card gline">
+              <h3 style="margin-bottom: 0.8rem">Principios no negociables</h3>
+              <ul class="clean">
+                <li><strong>Hook siempre exit 0</strong> — nunca bloquear Claude Code (I-1)</li>
+                <li><strong>Idempotencia por traceId</strong> — upsert determinista, no duplicados (I-2)</li>
+                <li><strong>cwd del primer JSONL entry</strong> — tags de proyecto correctos (I-3)</li>
+                <li><strong>Cero deps de producción</strong> — solo APIs built-in de Bun (ADR-001)</li>
+                <li><strong>Edge/Core split</strong> — hook/reconciler son locales; Langfuse va a GCP (ADR-002)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HEATMAP -->
+      <section class="tint" id="producto">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Alcance funcional</div>
+            <h2>
+              Del PRD inicial a hoy —
+              <span class="gt">cobertura por feature</span>
+            </h2>
+            <p class="lead">
+              La mayoría de módulos superan el alcance original. Color = % de
+              completitud.
+            </p>
+          </div>
+          <div class="heat reveal" id="heat"></div>
+          <div class="legend reveal">
+            <span
+              ><i class="sw" style="background: var(--green)"></i> ≥ 85% —
+              producción</span
+            >
+            <span
+              ><i class="sw" style="background: var(--amber)"></i> 60–84% — en
+              evolución</span
+            >
+            <span
+              ><i class="sw" style="background: var(--coral)"></i> &lt; 60% —
+              épica en curso</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTO REAL -->
+      <section id="real">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">El producto real</div>
+            <h2>
+              No es un prototipo — <span class="gt">está en producción</span>
+            </h2>
+            <p class="lead">
+              El stack Langfuse PRO es auth-gated (no deploy público). Las capturas siguientes son representaciones del sistema interno — hook Stop, reconciler, torre Langfuse v3 y gateway LiteLLM.
+            </p>
+          </div>
+          <div class="reveal">
+            <div class="frame">
+              <div class="bar">
+                <i></i><i></i><i></i
+                ><span class="u">hook stop · sincronización</span>
+              </div>
+              <img
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLAAAALuCAIAAAAxF3glAAAlAUlEQVR42u3deXiU9aHo8d87SSYBUUBlD/u+loAhYRMRFRWX1q1abk+rbe1yvJ7W3tPW9vRQ2z562j7P7XJ7u5ye29ONqrWu7LvsqwQIOyEk7Ls7hJDM3D+GxJiwaAuUwOfz+Edm5n1/85vfzDwv37yTMWrUqHU4V6LzPHJUD+d8NmYQXYDPYFQP53ymEaN6/U6J6vm7+2zc64X1DEb19t19plHq3zslqufvbsdBx0HHQcdBx0HHwb9HLAAAAHBJEoQAAACCEAAAgEtJes0L4z5aZEUAAAAuYj97aUxwhhAAACA4Q1jLEy91Cb5dzber+XY1367m29WCb1fzLaOOg46DjoOOg46DjoMX1XHw0Y9OCv6GEAAAAEEIAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAADAB5UeojrXRZYFAADgIhU5QwgAABB8ZBQAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAEIQAAAAIQgAAAC4B6SGqc11kWQAAAC5SkTOEAAAAwUdGAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAABBCAAAgCAEAADgEpAeojrXRZYFAADgIhU5QwgAABB8ZBQAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAEIQAAAAIQgAAAC4B6SGqc11kWQAAAC5SkTOEAAAAwUdGAQAAEIQA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QgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAOC8SA9RnesiywIAAHCRipwhBAAACD4yCgAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAIQgAAAAQhAAAAl4D0ENW5LrIsAAAAF6nIGUIAAIDgI6MAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCE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"
+                alt="Hook Stop — sync al cerrar sesión"
+                loading="lazy"
+              />
+            </div>
+            <p class="cap">
+              <strong>Hook Stop</strong>: agrega usage del JSONL al cerrar sesión Claude Code → envía traza a Langfuse. Síncrono, exit 0 siempre, &lt;10s, sin deps de producción.
+            </p>
+          </div>
+          <div class="grid c3 reveal" style="margin-top: 1.5rem">
+            <div>
+              <div class="frame">
+                <div class="bar">
+                  <i></i><i></i><i></i><span class="u">reconciler · drift cada 15min</span>
+                </div>
+                <img
+                  src="data:image/png;base64,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AAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAEEIAACAIAQAAOAjIB6iOo9FTgsAAMAVKnKHEAAAIHjLKAAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAAAgCAEAABCEAAAAfATEQ1TnschpAQAAuEJF7hACAAAEbxkFAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQA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"
+                  alt="Reconciler — drift cada 15min"
+                  loading="lazy"
+                />
+              </div>
+              <p class="cap">
+                <strong>Reconciler cron</strong>: systemd timer cada 15 min, detecta drift (TURNS/COST/END/MISSING) y re-ejecuta el hook sobre sesiones desincronizadas. Ventana de 24h por defecto.
+              </p>
+            </div>
+            <div>
+              <div class="frame">
+                <div class="bar">
+                  <i></i><i></i><i></i><span class="u">langfuse v3 · torre de trazas PRO</span>
+                </div>
+                <img
+                  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLAAAALuCAIAAAAxF3glAAAlyUlEQVR42u3dZ3xc5YHo4feMpJHkggnr3nEv2LggW7YsjAsYYlpCXydLCQR2k5t7s/llN5tyCSE3ybLZJJdkExJCC5himnGRq9w7Bvcuy5ILbtgEDLGtNvfDWIqwXOCuTCz7eT7Jx+95551zZn6Hv89oiBo0aBnOlOgznjmqg2uujRVEZ+EZjOrgmk83Y1Sn3ylRHX9318ajnl1nMKqz7+7TzVL33ilRHX93uw66DroOug66DroO/nfEAgAAAOclQQgAACAIAQAAOJ+kVv/DgzcWOCIAAADnsEfHjw7uEAIAAAR3CI/z0PhOwber+XY1367m29V8u1rw7Wq+ZdR10HXQddB10HXQdfCcug5+48bJwe8QAgAAIAgBAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAD4pFJDVGNb5LAAAACcoyJ3CAEAAIKPjAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAAghAAAABBCAAAwHkgNUQ1tkUOCwAAwDkqcocQAAAg+MgoAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAACAIAQAAEIQAAACcB1JDVGNb5LAAAACcoyJ3CAEAAIKPjAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAAghAAAABBCAAAwHkgNUQ1tkUOCwAAwDkqcocQAAAg+MgoAAAAghAA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"
+                  alt="Langfuse v3 — torre de trazas PRO"
+                  loading="lazy"
+                />
+              </div>
+              <p class="cap">
+                <strong>Langfuse v3 PRO</strong> en <code>langfuse.atlax360.ai</code>: Cloud Run (web+worker) + Cloud SQL Postgres + ClickHouse GCE + Memorystore Redis + GCS. Activo desde 2026-05-10.
+              </p>
+            </div>
+            <div>
+              <div class="frame">
+                <div class="bar">
+                  <i></i><i></i><i></i><span class="u">litellm gateway · virtual keys</span>
+                </div>
+                <img
+                  src="data:image/png;base64,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EIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAVFELlk6v+G2btq2+feWlqa9vvnX4gfeadshblq6e88hv/2/5t7/69UNLV8+puMFl377khVf/8uxLT/7hz49mNGyw3zu66dZrnSMABCEAHAtr17z9zF//vjfGbhv+jwxVVFTUslWLtLRYCCGKombNmxYVFZX/NCe317mDBlz+resuv2T4vLkL//MX/7b/IPzH5gAAghAAwuFeM7zznltr1qz55NO/q1Pn5F/9+qGnRjz+zPNPdD2j82ENtXzZyi5dO4UQOnRst3rl2oo/uu6mqx/578eLi4tDCM/85fndhYVpabE2bVv97YU/jRz3/LXXDwsh3HnPLTVr1vzT0787uc7Jv/r1Q38e8diI5//Y9YxOIYSxk19q1LhhCOGJp397/4PfDyFkZff87//5aZu2Lf/2whMjxz1/7fXfDiG8MuqZ5i2ahhBq1641bsrLURQ5vwAIQgA4hEcffuzTTz8dftVtP/jR3U//+dlrht1y7933P/TzBw5rkOlTZ+f27xNCyO3Xe/q0WRV/1KZNy/JE/OSTT2+78XslJaXDrhn6X7/4n2FDb7jh5qtDCI8+/Pinn3563VW33feju57+87PXDrv1+3c/8JOfPxBCmDZldmavHrFYLBZFHTq1DSFk9uoxbcqsYddc9l+/+E35CCNfG3POeWeFEPqdlTN+zORkMunMAvBPF3cIAKgqcvv1Tl1kCyHUqFEjLS1WUlL6JfedMX3OlVdf9j+//t/sPpkjnn6+4o/S4ntXw+E3XDnw3H716p12/sBLfvnTRwZ/c9CAgbm1a9equHHffr2bfXEO06fOOu/8gatWrFmxfHX7jm1r1aqZmdXjuRH3jx8zueIIb7w69lePPPTE758++7z+f3z8KWcTAEEIAIchLR6//urbd+8uisViPc/s9uVrMITwwfsflCZLGzZsEEL4+ONPKv6oYN2Gdh3aLH1r+ZN//OuLz786481xIYRHH/vF2NETn37quSuuuvQLC2c8fsPVd1Scw7w587933x09ep6xYP7i3YW7e/U+M5FI7Nr17hN/+c3Y0ZOefurZK64aEkLYunV7aTLZIKN+4yYNV65Y42wCELxl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AAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAACCEAAAAEEIAADAV0A8RJVuixwWAACAE1TkCiEAAEDwllEAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAQBACAAAgCAEAAPgKiIeo0m2RwwIAAHCCilwhBAAACN4yCgAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAABBCAAAgCAEAABAEAIAACAIAQAAEIQAAAAIQgAAAAQhAAAAghAAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAACAIAQAAEAQAgAAIAgBAAAQhAAAAAhCAAAABCEAAACCEAAAAEEIAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEAABCEAAAACEIAAAAEIQAAAIIQAAAAQQgAAIAgBAAAQBACAAAgCAEA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"
+                  alt="LiteLLM Gateway — virtual keys + callback"
+                  loading="lazy"
+                />
+              </div>
+              <p class="cap">
+                <strong>LiteLLM gateway</strong> en Cloud Run: virtual keys por workload, soft budget, callback <code>langfuse</code> → traza automática de cada llamada al LLM. Vertex AI vía gateway (ADR-016).
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EVOLUCIÓN -->
+      <section class="tint" id="evolucion">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Evolución en el tiempo</div>
+            <h2>
+              La curva de crecimiento
+              <span class="gt">(abril → junio 2026)</span>
+            </h2>
+          </div>
+          <div class="split reveal">
+            <div class="card">
+              <h3 style="margin-bottom: 0.6rem">
+                LOC por categoría — reconstruido desde git
+              </h3>
+              <div id="locChart"></div>
+              <div class="legend" style="margin-top: 0.6rem">
+                <span
+                  ><i class="sw" style="background: var(--v)"></i> Lógica</span
+                >
+                <span
+                  ><i class="sw" style="background: var(--c)"></i> Tests</span
+                >
+                <span
+                  ><i class="sw" style="background: var(--amber)"></i> Datos
+                  canónicos</span
+                >
+              </div>
+              <p class="cap" style="margin-top: 0.6rem">
+                Lógica y tests crecen casi 1:1 (TDD sostenido). Los datos
+                canónicos (cadencia en ráfagas: 20 PRs/8.8k LOC en 1 día — sprints comprimidos AI-asistidos) → el
+                "LOC neto" no mide esfuerzo de programación.
+              </p>
+            </div>
+            <div class="grid" style="gap: 1rem">
+              <div class="card stat">
+                <div class="n">227 → 723</div>
+                <div class="l">PRs mergeados (20 may → 18 jun)</div>
+              </div>
+              <div class="card stat">
+                <div class="n plain">1.114</div>
+                <div class="l">commits · 51 días activos</div>
+              </div>
+              <div class="card gline">
+                <h3 style="margin-bottom: 0.35rem">Récord</h3>
+                <p style="font-size: 0.9rem">
+                  <strong>149 PRs</strong> en 7 días ·
+                  <strong>43 PRs</strong> en un día (06-13, 15 h, dos tiradas
+                  autónomas en paralelo).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MÉTODO / CICLO DE VIDA -->
+      <section id="metodo">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Método Centauro</div>
+            <h2>
+              Un ciclo de vida <span class="gt">iterativo y completo</span> — no
+              solo código
+            </h2>
+            <p class="lead">
+              Un director humano + IA (Opus orquesta, Sonnet implementa). El
+              ciclo es <strong>fractal e iterativo</strong>: cada feature
+              evoluciona <strong>PoC → MVP → MMR</strong> y el ciclo entero se
+              repite por sesión (handoff → handoff), versionando de v1.4 a
+              v2.63+.
+            </p>
+          </div>
+          <div class="split reveal" style="align-items: start">
+            <div class="card gline">
+              <div class="tl" id="tl"></div>
+            </div>
+            <div class="grid" style="gap: 1rem">
+              <div class="card">
+                <h3 style="margin-bottom: 0.4rem">Roles</h3>
+                <ul class="clean" style="gap: 0.35rem">
+                  <li><strong>Humano</strong> — director, validador (R12)</li>
+                  <li><strong>Opus</strong> — orquestador + integración</li>
+                  <li>
+                    <strong>Sonnet</strong> — subagentes (&lt;45 min, worktrees
+                    aislados)
+                  </li>
+                </ul>
+              </div>
+              <div class="card gline">
+                <h3 style="margin-bottom: 0.4rem">
+                  El <span class="mono gt">/goal</span> iterativo
+                </h3>
+                <p style="font-size: 0.9rem">
+                  Condición de cierre <strong>numerable</strong> (gh / git grep
+                  / test:coverage) + límite de turnos → sesiones autónomas de
+                  3–10 h con CI verde como gate.
+                </p>
+              </div>
+              <div class="card">
+                <h3 style="margin-bottom: 0.4rem">Versiona desde PoC</h3>
+                <p style="font-size: 0.9rem">
+                  Ej.: embeddings PoC v2.0 → MVP v2.5 → MMR; pipeline E2E PoC
+                  (fixture) → MVP (flujo real ERIC, 84 nodos). Cada vN tiene
+                  milestone medible.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HIPERCONECTIVIDAD -->
+      <section class="tint" id="conectividad">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Hiperconectividad</div>
+            <h2>
+              Todo orquestado
+              <span class="gt">desde el CLI de Claude Code</span>
+            </h2>
+            <p class="lead">
+              Un único punto de control conecta hook local, reconciler cron, stack GCP y gateway. Tres niveles: <strong>dominio</strong> → <strong>herramienta</strong> → <strong>detalle</strong> (las capas del pipeline JSONL→Langfuse, los componentes GCP, el gateway LiteLLM). El director no cambia de herramienta: dirige y la IA opera todo el ecosistema.
+            </p>
+          </div>
+          <div class="card hyper reveal">
+            <div id="hyperGraph"></div>
+            <div
+              class="legend"
+              style="
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem 1.1rem;
+              "
+            >
+              <span><i class="sw" style="background: #8b5cf6"></i> Hook Stop</span>
+              <span><i class="sw" style="background: #22d3ee"></i> Reconciler</span>
+              <span><i class="sw" style="background: #34d399"></i> Stack Langfuse v3</span>
+              <span><i class="sw" style="background: #fbbf24"></i> LiteLLM Gateway</span>
+              <span><i class="sw" style="background: #f472b6"></i> MCP Server</span>
+              <span><i class="sw" style="background: #60a5fa"></i> Deploy &amp; CI</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOLING -->
+      <section id="tooling">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Tooling</div>
+            <h2>
+              El instrumental, <span class="gt">una línea por herramienta</span>
+            </h2>
+            <p class="lead">
+              CLIs, MCPs, add-ons de contexto e integraciones que el centauro
+              usa a diario, todos accesibles desde la misma sesión.
+            </p>
+          </div>
+          <div class="grid c2 reveal" style="align-items: start">
+            <div class="card">
+              <h3 style="margin-bottom: 0.6rem">
+                CLIs <span class="pill v">7</span>
+              </h3>
+              <table>
+                <tbody><tr>
+                    <td><b>bun</b></td>
+                    <td>runtime único (install, dev, test, scripts) — ADR-001</td>
+                  </tr>
+                  <tr>
+                    <td><b>gh</b></td>
+                    <td>PRs, merges, CI checks, rescates de rama</td>
+                  </tr>
+                  <tr>
+                    <td><b>gcloud</b></td>
+                    <td>GCP · Cloud Run · Cloud SQL · ClickHouse GCE · Memorystore</td>
+                  </tr>
+                  <tr>
+                    <td><b>docker</b></td>
+                    <td>stack Langfuse local (docker-compose) + imagen LiteLLM</td>
+                  </tr>
+                  <tr>
+                    <td><b>wrangler</b></td>
+                    <td>CDN edge (descartado) · referencia cruzada infra</td>
+                  </tr>
+                  <tr>
+                    <td><b>claude</b></td>
+                    <td>hook Stop consumer + sesiones de desarrollo</td>
+                  </tr>
+                  <tr>
+                    <td><b>biome</b></td>
+                    <td>lint + format (reemplaza eslint/prettier)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card">
+              <h3 style="margin-bottom: 0.6rem">
+                MCPs <span class="pill o">3</span>
+              </h3>
+              <table>
+                <tbody><tr>
+                    <td><b>linear-atlax</b></td>
+                    <td>gobernanza · 23 issues · proyecto Langfuse Bridge</td>
+                  </tr>
+                  <tr>
+                    <td><b>Google Drive</b></td>
+                    <td>documentos de operación + backup artifacts</td>
+                  </tr>
+                  <tr>
+                    <td><b>Slack</b></td>
+                    <td>alertas LiteLLM budget + incidentes</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div
+            class="grid c2 reveal"
+            style="align-items: start; margin-top: 1.1rem"
+          >
+            <div class="card gline">
+              <h3 style="margin-bottom: 0.6rem">
+                Add-ons de contexto
+                <span class="mono" style="color: var(--faint)"
+                  >(spike ATL-70)</span
+                >
+              </h3>
+              <table>
+                <tbody><tr>
+                    <td><b>RTK</b></td>
+                    <td><span class="pill g">adoptado</span> comprime output Bash −60–90% tokens</td>
+                  </tr>
+                  <tr>
+                    <td><b>PreToolUse hook</b></td>
+                    <td><span class="pill g">adoptado</span> bloquea operaciones destructivas (INC-001)</td>
+                  </tr>
+                  <tr>
+                    <td><b>Browser extension</b></td>
+                    <td><span class="pill g">adoptado</span> inyecta sessionId en contexto de sesión</td>
+                  </tr>
+                  <tr>
+                    <td><b>Chrome Web Store</b></td>
+                    <td><span class="pill r">descartado</span> política MDM impide install (ADR-011)</td>
+                  </tr>
+                  <tr>
+                    <td><b>Serena read</b></td>
+                    <td><span class="pill g">adoptado</span> símbolo LSP en 1 llamada</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card">
+              <h3 style="margin-bottom: 0.6rem">Integraciones & entornos</h3>
+              <table>
+                <tbody><tr>
+                    <td><b>Langfuse v3 PRO</b></td>
+                    <td>ingestión API + ClickHouse → <code>langfuse.atlax360.ai</code></td>
+                  </tr>
+                  <tr>
+                    <td><b>GCP (Cloud Run + SQL + GCE)</b></td>
+                    <td>PRO stack · europe-west1 · activo desde 2026-05-10</td>
+                  </tr>
+                  <tr>
+                    <td><b>Anthropic (Admin API)</b></td>
+                    <td>cost_report + seats API · keys sk-ant-admin*</td>
+                  </tr>
+                  <tr>
+                    <td><b>LiteLLM proxy</b></td>
+                    <td>virtual keys · soft budget · callback Langfuse · Vertex AI</td>
+                  </tr>
+                  <tr>
+                    <td><b>GitHub Actions</b></td>
+                    <td>CI matrix ubuntu+macos · bun audit gate · deploy smoke</td>
+                  </tr>
+                  <tr>
+                    <td><b>systemd / launchd</b></td>
+                    <td>reconciler timer cada 15min · <span class="pill a">local dev</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INVESTIGADO Y DESCARTADO -->
+      <section id="descartado">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Rigor de decisión</div>
+            <h2>Investigado <span class="gt">y descartado</span></h2>
+            <p class="lead">
+              No todo lo que se evalúa se adopta. Cada decisión arquitectónica
+              documenta también lo que <strong>NO</strong> se hace y por qué —
+              un ADR que dice "no" vale más que uno que solo describe el "sí".
+            </p>
+          </div>
+          <div class="card reveal">
+            <table>
+              <thead>
+                <tr>
+                  <th>Investigado</th>
+                  <th>Por qué se descartó / difirió</th>
+                  <th>Qué usamos</th>
+                </tr>
+              </thead>
+              <tbody><tr>
+                  <td><b>Node.js / Deno</b> (runtime)</td>
+                  <td>Cold-start >100ms, npm en vez de bun:sqlite nativo (ADR-001)</td>
+                  <td>Bun (cold-start ~50ms, SQLite nativo, cero deps)</td>
+                </tr>
+                <tr>
+                  <td><b>Hook/reconciler en Cloud Run</b></td>
+                  <td>Dependen del filesystem local del dev (I-13 / ADR-002)</td>
+                  <td>Edge: máquina dev; Core: solo Langfuse stack a GCP</td>
+                </tr>
+                <tr>
+                  <td><b>LiteLLM para OAuth seats</b></td>
+                  <td>Seats Premium Team no exponen modelo por API Admin (ADR-007)</td>
+                  <td>LiteLLM opt-in solo para api-direct y vertex-gcp</td>
+                </tr>
+                <tr>
+                  <td><b>Browser extension → Chrome Store</b></td>
+                  <td>Política MDM de Atlax impide installs no gestionados (ADR-011)</td>
+                  <td>Distribución por script de onboarding manual</td>
+                </tr>
+                <tr>
+                  <td><b>ClickHouse en Cloud Run</b></td>
+                  <td>StatefulSets de disco necesitan VM GCE con SSD persistente (ADR-012)</td>
+                  <td>ClickHouse en GCE e2-standard-2 con disco SSD adjunto</td>
+                </tr>
+                <tr>
+                  <td><b>TLS verification en Memorystore</b></td>
+                  <td>ADR-017: flag con ADR formal obligatorio — VPC privado mitiga riesgo</td>
+                  <td>NODE_TLS_REJECT_UNAUTHORIZED=0 + ADR explícito + red VPC</td>
+                </tr>
+                <tr>
+                  <td><b>Coste en cents (bigint)</b></td>
+                  <td>Over-engineering para acumulados <$100/sesión; COST_EPSILON compensa (ADR-018)</td>
+                  <td>Float + COST_EPSILON 0.001 + redondeo display</td>
+                </tr>
+                <tr>
+                  <td><b>Logging plano (console.log)</b></td>
+                  <td>Interfiere con hooks downstream; ilegible en CloudLogging (ADR-019)</td>
+                  <td>JSON estructurado a stderr (degradation log)</td>
+                </tr>
+                <tr>
+                  <td><b>Deploy PRO automático CI</b></td>
+                  <td>Infra GCP crítica: smoke manual + revisión humana > velocidad (ADR-020)</td>
+                  <td>Manual deliberado + gate smoke E2E 8/8 pre-deploy</td>
+                </tr>
+                <tr>
+                  <td><b>Monorepo con atlax-claude-dashboard</b></td>
+                  <td>Ciclos de release independientes, complejidad sin retorno</td>
+                  <td>Repos separados; shared/model-pricing.ts como SSoT de pricing</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- STACK + 5 SESIONES -->
+      <section class="tint" id="stack">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Stack tecnológico</div>
+            <h2>Arquitectura dual <span class="gt">edge-tooling + server-only</span></h2>
+          </div>
+          <div class="split reveal">
+            <div class="grid" style="gap: 1rem">
+              <div class="card gline">
+                <h3 style="margin-bottom: 0.4rem">
+                  Repo plano · scripts + hooks + shared
+                </h3>
+                <p style="font-size: 0.9rem">
+                  <span class="mono">hooks/</span>langfuse-sync.ts +
+                  <span class="mono">scripts/</span>reconcile-traces · detect-tier · smoke-mcp-e2e +
+                  <span class="mono">shared/</span>aggregate · drift · model-pricing · validation.
+                  Cero deps de producción (ADR-001). Docker stack en
+                  <span class="mono">docker/</span>.
+                </p>
+              </div>
+              <div class="card">
+                <h3 style="margin-bottom: 0.45rem">
+                  Trabajo centralizado y paralelo
+                </h3>
+                <p style="font-size: 0.9rem">
+                  Hasta <strong>5 sesiones físicas de Claude Code</strong> a la
+                  vez sobre el mismo repo, coordinadas por
+                  <strong>git worktrees + Linear + Supabase</strong>. Dentro de
+                  cada sesión, hasta <strong>~9 subagentes Sonnet</strong> en
+                  paralelo.
+                  <span style="color: var(--faint)"
+                    >(Esta web se generó mientras otras sesiones cerraban
+                    frameworks y APD.)</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="card">
+              <table><tr>
+                  <td>Runtime</td>
+                  <td class="num"><strong>Bun ≥1.3</strong> (CI: 1.3.x)</td>
+                </tr>
+                <tr>
+                  <td>Lenguaje</td>
+                  <td class="num">TypeScript strict ^5.4.0</td>
+                </tr>
+                <tr>
+                  <td>Deps producción</td>
+                  <td class="num">Cero (ADR-001)</td>
+                </tr>
+                <tr>
+                  <td>Deps dev</td>
+                  <td class="num">bun-types · typescript · zod</td>
+                </tr>
+                <tr>
+                  <td>Observabilidad</td>
+                  <td class="num">Langfuse v3 self-hosted</td>
+                </tr>
+                <tr>
+                  <td>Gateway</td>
+                  <td class="num">LiteLLM v1.83.7 (opt-in)</td>
+                </tr>
+                <tr>
+                  <td>PRO stack GCP</td>
+                  <td class="num">Cloud Run · Cloud SQL · ClickHouse GCE · Memorystore · GCS</td>
+                </tr>
+                <tr>
+                  <td>CI</td>
+                  <td class="num">GitHub Actions (ubuntu+macos matrix)</td>
+                </tr>
+                <tr>
+                  <td>Deploy PRO</td>
+                  <td class="num">Manual + smoke gate E2E 8/8</td>
+                </tr></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HARNESS -->
+      <section id="harness">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">El harness como ventaja competitiva</div>
+            <h2>
+              Autonomía creciente,
+              <span class="gt">harness cada vez más robusto</span>
+            </h2>
+          </div>
+          <div class="split reveal">
+            <div class="card">
+              <h3 style="margin-bottom: 0.5rem">
+                Evolución de la autonomía — subagentes en paralelo (pico)
+              </h3>
+              <div id="autoChart"></div>
+              <p class="cap" style="margin-top: 0.6rem">
+                De brownfield sin CI (22-abr) a v1.0.1 en producción (21-jun) en 16 días activos. La ley <strong>incidente → regla → inmunidad</strong> funcionó: 14 reglas/ADRs nacidas de fricción real, ningún incidente se repitió. El pico fue 7-may: roadmap de 8 semanas ejecutado íntegro en ~8 horas (20 PRs / 8.8k LOC).
+              </p>
+            </div>
+            <div class="grid" style="gap: 1rem">
+              <div class="card gline">
+                <h3 style="margin-bottom: 0.4rem">Los 3 niveles de "verde"</h3>
+                <p style="font-size: 0.9rem">
+                  <span class="mono">nivel-1</span> subagente →
+                  <span class="mono">nivel-2</span> integración →
+                  <span class="mono gt">nivel-3</span> CI (único definitivo).
+                </p>
+              </div>
+              <div class="card">
+                <h3 style="margin-bottom: 0.4rem">El harness endurecido</h3>
+                <ul class="clean" style="gap: 0.35rem; font-size: 0.9rem">
+                  <li>
+                    <strong>15 invariantes (I-1…I-15)</strong> + 20 ADRs + 9 reglas cross-project nacidas de fricción
+                  </li>
+                  <li>
+                    <strong>Anti-enroque a 2 intentos</strong> · ground-truth vs
+                    git
+                  </li>
+                  <li>
+                    Hooks pre-push · cross-validation · smoke E2E · env-parity
+                  </li>
+                  <li>Cada lección → regla que no se repite</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="grid c3 reveal" style="margin-top: 1.4rem">
+            <div class="card">
+              <h3 style="margin-bottom: 0.5rem">Tres actos, tres meses</h3>
+              <ul class="clean" style="gap: 0.35rem; font-size: 0.9rem">
+                <li><strong>Acto I · Fundación (22-29 abr · ~37 PRs)</strong> — brownfield → 354 tests/89% coverage + LiteLLM M1-M3 + MCP server + browser extension + ADR-001..007 retroactivos. INC-001 (docker down -v) → PreToolUse hook + ADR-008.</li>
+                <li><strong>Acto II · Roadmap a producción (6-11 may · ~64 PRs)</strong> — S17-S24 completo en 1 día (7-may); deploy PRO GCP (Cloud Run+Cloud SQL+ClickHouse+Memorystore+GCS); audit 360º (47 hallazgos); upgrade Langfuse 3.173.0; v1.0.1 activo.</li>
+                <li><strong>Acto III · Mantenimiento + gobernanza (19-may → 21-jun · ~7 PRs)</strong> — audit bisemanal; intake brownfield cierra gap D7: ADRs 018/019/020, scorecard 81%, Linear 23 issues, 3 PBIs técnicos, corpus 16 retros.</li>
+              </ul>
+            </div>
+            <div class="card gline">
+              <h3 style="margin-bottom: 0.5rem">Ley empírica</h3>
+              <p style="font-size: 0.9rem">
+                <span class="gt">incidente → regla → inmunidad</span>. INC-001 (docker down -v) → PreToolUse hook + ADR-008. Bug silencioso <code>cost_report</code> ($14.788/sem sin verificar) → smoke baseline obligatorio cross-project. Fix-de-fix ×3 infra GCP (9-may) → gate billing pre-flight + smoke E2E 8/8.
+              </p>
+            </div>
+            <div class="card">
+              <h3 style="margin-bottom: 0.5rem">
+                Los dos techos vigentes son humanos
+              </h3>
+              <ul class="clean" style="gap: 0.35rem; font-size: 0.9rem">
+                <li>Velocidad sin ventana de revisión: 7 fix-of-fix, merges en 5-13s sin revisión humana.</li>
+                <li>Documentación y operación tardías: ADRs post-hoc, checkboxes decorativos, features sin smoke E2E operativo al merge.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MÉTRICAS -->
+      <section class="tint" id="metricas">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Métricas de profundidad</div>
+            <h2>
+              La profundidad del proyecto, <span class="gt">en números</span>
+            </h2>
+            <p class="lead">
+              Ground-truth de git, gh, Linear y bun run check — actualizado a 21 jun 2026 (intake brownfield completo + 16 retros reconstruidas).
+            </p>
+          </div>
+          <div class="grid c4 reveal" style="margin-bottom: 1.4rem">
+            <div class="card stat"><div class="n" data-count="38064">0</div><div class="l">LOC bruto (add+del de PRs)</div></div>
+            <div class="card stat"><div class="n" data-count="1062">0</div><div class="l">tests · 0 fallos</div></div>
+            <div class="card stat"><div class="n" data-count="50">0</div><div class="l">commits · 16 días activos</div></div>
+            <div class="card stat"><div class="n plain" data-count="20">0</div><div class="l">ADRs documentados</div></div>
+          </div>
+          <div class="split reveal">
+            <table>
+              <thead>
+                <tr>
+                  <th>Entrega & gobernanza</th>
+                  <th class="num">valor</th>
+                </tr>
+              </thead>
+              <tbody><tr>
+                  <td>PRs mergeados</td>
+                  <td class="num"><strong>108</strong></td>
+                </tr>
+                <tr>
+                  <td>Commits · días activos</td>
+                  <td class="num">50 · 16</td>
+                </tr>
+                <tr>
+                  <td>Tests (casos) · 0 fallos</td>
+                  <td class="num">1.062</td>
+                </tr>
+                <tr>
+                  <td>LOC bruto (add+del)</td>
+                  <td class="num">38.064</td>
+                </tr>
+                <tr>
+                  <td>Día pico (7-may)</td>
+                  <td class="num">20 PRs · 8.8k LOC · ~8h</td>
+                </tr>
+                <tr>
+                  <td>ADRs · Invariantes</td>
+                  <td class="num">20 · 15</td>
+                </tr>
+                <tr>
+                  <td>Incidentes documentados</td>
+                  <td class="num">1 (INC-001 · recuperado)</td>
+                </tr>
+                <tr>
+                  <td>Fix-of-fix (retrabajo)</td>
+                  <td class="num">7 ocurrencias</td>
+                </tr>
+                <tr>
+                  <td>Gobernanza Linear (ATL)</td>
+                  <td class="num">23 issues · 13 Done</td>
+                </tr>
+                <tr>
+                  <td>Estado PRO</td>
+                  <td class="num">activo · langfuse.atlax360.ai</td>
+                </tr>
+              </tbody>
+            </table>
+            <div>
+              <h3 style="margin-bottom: 0.55rem; font-size: 1rem">
+                Commits por tipo (conventional)
+              </h3>
+              <div id="linearBar"></div>
+              <p class="cap" style="margin-top: 0.5rem">
+                feat · fix · docs · test — 50 commits en 16 días activos. Pico: <span class="mono">7-may</span> (20 PRs · 8.8k LOC en ~8h).
+              </p>
+              <h3 style="margin: 1rem 0 0.55rem; font-size: 1rem">
+                PRs mergeados acumulados
+              </h3>
+              <div id="prChart"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COSTE / ESFUERZO -->
+      <section id="coste">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Esfuerzo equivalente</div>
+            <h2>
+              El esfuerzo que pediría
+              <span class="gt">de forma convencional</span>
+            </h2>
+            <p class="lead">
+              Sin variable económica — el apalancamiento se mide en tiempo de calendario y densidad de entrega. 16 días activos en 61 días naturales (ráfagas comprimidas AI-asistidas). Tiempo de sesión medido: <strong>[parcial: solo sesiones de junio 2026 instrumentadas]</strong> (1.5h lineal, 1.3h repercutible en las 2 sesiones de jun). Las 16 jornadas históricas no tienen transcript en este host.
+            </p>
+          </div>
+          <div class="cmp reveal">
+            <div class="card gline">
+              <div class="label" style="color: var(--coral)">
+                Equipo convencional
+              </div>
+              <div class="big">
+                Equipo convencional<br /><span style="color: var(--muted); font-weight: 600">× estimación multi-mes</span>
+              </div>
+              <table style="margin-top: 1rem">
+                <tbody>
+                  <tr>
+                  <tr>
+                  <td>PRs equivalentes</td>
+                  <td class="num">~108 features/fixes formales</td>
+                </tr>
+                <tr>
+                  <td>Infra desplegada</td>
+                  <td class="num">Cloud Run + SQL + GCE + Redis + GCS</td>
+                </tr>
+                <tr>
+                  <td>Cobertura tests</td>
+                  <td class="num">1.062 casos · suite real</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="vs">vs</div>
+            <div class="card gline">
+              <div class="label">Modo centauro</div>
+              <div class="big gt">
+                1 director + IA<br /><span style="-webkit-text-fill-color: var(--muted); font-weight: 600">× 16 días activos</span>
+              </div>
+              <table style="margin-top: 1rem">
+                <tbody>
+                  <tr>
+                  <tr>
+                  <td>Días con actividad</td>
+                  <td class="num">16</td>
+                </tr>
+                <tr>
+                  <td>Commits</td>
+                  <td class="num">50</td>
+                </tr>
+                <tr>
+                  <td>Tiempo sesión [inferido]</td>
+                  <td class="num">parcial · solo jun-2026</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="grid c3 reveal" style="margin-top: 1.4rem"><div class="card stat"><div class="n" data-count="16">0</div><div class="l">días activos de los 61 naturales</div></div>
+            <div class="card stat"><div class="n plain" data-count="20">0</div><div class="l">PRs en 1 solo día (pico 7-may)</div></div>
+            <div class="card stat"><div class="n" data-count="1062">0</div><div class="l">tests · 0 fallos</div></div></div>
+          </div>
+          <p class="note reveal" style="margin-top: 1.4rem">
+            <strong>Doble check honesto:</strong> la estimación tipo COCOMO
+            <em>sobreestima</em> para stacks modernos de alto nivel — tómese
+            como <strong>orden de magnitud de esfuerzo</strong>, no como cifra
+            exacta. Las
+            <strong>Nota honesta:</strong> el tiempo de sesión <em>no está instrumentado</em> para las 16 jornadas históricas (solo 2 sesiones de junio). Las métricas de apalancamiento se basan en entregables objetivos (PRs, tests, infra GCP activa), no en horas estimadas. <strong>El dato de velocidad verificable</strong>: roadmap de 8 semanas (S17→S24) ejecutado íntegro en ~8h el 7-may.
+          </p>
+        </div>
+      </section>
+
+      <!-- CIERRE -->
+      <section id="cierre">
+        <div class="wrap">
+          <div class="reveal">
+            <div class="label">Cierre</div>
+            <h2>Lo aprendido · <span class="gt">hacia dónde vamos</span></h2>
+          </div>
+          <div class="split reveal" style="margin-top: 1.4rem">
+            <div class="card">
+              <h3 style="margin-bottom: 0.65rem">Lo que hemos demostrado</h3>
+              <ul class="clean">
+                <li>Una torre de observabilidad FinOps <strong>en producción</strong> en GCP, no un prototipo.</li>
+                <li>Arquitectura dual <strong>edge/core</strong> con invariante verificado en CI (I-13 / ADR-002).</li>
+                <li>La ley <strong>incidente → regla → inmunidad</strong>: 14 reglas nacidas de fricción, ningún incidente se repitió.</li>
+                <li><strong>Cero deps de producción</strong>: ADR-001 verificado en 1.062 tests, no solo en documentación.</li>
+                <li><strong>Gobernanza formal</strong> (jun 2026): 23 issues Linear ATL con evidencia <code>file:line</code>, scorecard 81%, intake brownfield completo.</li>
+              </ul>
+            </div>
+            <div class="card gline">
+              <h3 style="margin-bottom: 0.65rem">
+                Roadmap próximo <span class="pill o">ADRs Proposed</span>
+              </h3>
+              <ul class="clean">
+                <li><strong>Distribuir hook a los 38 devs</strong> (ATL-380/381) — mayor multiplicador de valor, bloqueado solo por coordinación</li>
+                <li><strong>Dashboard de uso FinOps</strong> — visualización de coste por proyecto/dev sobre datos Langfuse PRO</li>
+                <li><strong>MCP server en producción</strong> — herramienta de trace-lookup en sesiones activas</li>
+                <li><strong>Vertex AI quota management</strong> — ADR-016 en piloto, escalar a toda la org</li>
+                <li><strong>Automatizar deploy PRO</strong> — ADR-020 aceptó manual deliberado; revisar cuando el smoke gate esté maduro</li>
+                <li><strong>Documentar causa raíz conversacional INC-001</strong> — grieta de proceso abierta desde abril</li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="card reveal"
+            style="
+              margin-top: 1.6rem;
+              border-color: rgba(139, 92, 246, 0.4);
+              background: linear-gradient(
+                135deg,
+                rgba(139, 92, 246, 0.08),
+                rgba(34, 211, 238, 0.05)
+              );
+            "
+          >
+            <div class="label">Lo que el mercado confirma</div>
+            <h3 style="margin: 0.3rem 0 0.7rem; font-size: 1.15rem">
+              La curva que parece exponencial es una
+              <span class="gt">escalera de harness</span>, no el modelo.
+            </h3>
+            <ul class="clean" style="font-size: 0.92rem">
+              <li>
+                El
+                <strong>harness mueve la frontera tanto como el modelo</strong>:
+                quitar el andamiaje hunde SWE-bench (80,9 → 45,9).
+              </li>
+              <li>
+                El modelo es intercambiable (Opus 4.7 → 4.8 → Fable 5); el
+                harness es la <strong>variable acumulativa</strong>.
+              </li>
+              <li>
+                Productividad real <strong>~15-20% neto</strong> tras rework; el
+                "90% del código por IA" es hype (real ~50%). La IA
+                <strong>amplifica</strong> a un equipo fuerte, no lo sustituye.
+              </li>
+              <li>
+                El <strong>coste</strong> —no la capacidad— es el límite
+                operativo real.
+              </li>
+            </ul>
+            <p
+              style="
+                margin-top: 0.7rem;
+                font-size: 0.92rem;
+                color: var(--muted);
+              "
+            >
+              <strong>Tesis:</strong> el retorno no está en esperar el siguiente
+              modelo, sino en <span class="gt">construir mejor harness</span> —
+              la conclusión del mercado, demostrada con datos propios.
+            </p>
+          </div>
+          <p class="closing reveal" style="margin-top: 2.6rem">
+            El bridge no es solo observabilidad — es la prueba de
+            <span class="gt">cómo Atlax 360 puede construir</span>.
+          </p>
+        </div>
+      </section>
+
+      <footer>
+        <div class="wrap">
+          <div class="brand">
+            <svg viewBox="0 0 286 108" height="24" role="img" aria-label="Atlax 360" style="vertical-align: middle"><polygon points="10,70 62,70 36,16" fill="#F39200" /><polygon points="170,70 222,70 196,16" fill="#FFA400" /><text x="64" y="70" style="font-size:66px;font-weight:800;fill:#9aa0b8;font-family:Inter,system-ui,sans-serif;letter-spacing:-2px">TL</text><text x="224" y="70" style="font-size:66px;font-weight:800;fill:#9aa0b8;font-family:Inter,system-ui,sans-serif;letter-spacing:-2px">X</text><text x="74" y="100" style="font-size:30px;font-weight:600;fill:#f39200;font-family:Inter,system-ui,sans-serif;letter-spacing:6px">360</text></svg>
+            <span class="mono">Atlax 360</span>
+          </div>
+          <span class="mono"
+            >atlax-langfuse-bridge · main · snapshot 2026-06-21 · Confidencial</span
+          >
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+      (function () {
+        const FEATURES = [["Hook Stop + reconciler cron",100],["Langfuse v3 PRO (GCP)",100],["Pricing SSoT (I-6)",100],["MCP server + tool registry",95],["LiteLLM gateway + virtual keys",90],["Browser extension (hook PreToolUse)",85],["Tier detection + statusline",85],["Drift classification (I-11)",85],["Vertex AI vía gateway (ADR-016)",80],["Backups PRO (Cloud SQL + GCS)",80],["Piloto 13 devs Atlax360",40],["Distribución a los 38 devs",15]];
+        const LOC = [{"d":"abr","logic":12000,"tests":6000,"data":0},{"d":"may (acum)","logic":30000,"tests":14000,"data":2000},{"d":"jun","logic":32000,"tests":15000,"data":2000}];
+        const AUTO = [["tiradas\nindividuales\nabril",1],["roadmap\ncomprimido\n7-may",2],["disciplina\nsmoke\nmayo",2],["gates\nexplícitos\nintake-jun",3]];
+        const PR = [["abr",37],["may",101],["jun",108]];
+        const LIFECYCLE = [
+          ["Auditoría", "estado real vía git/gh/grep", "ground-truth"],
+          [
+            "Investigación SOTA",
+            "cómo lo resuelve el mercado (Signavio, Celonis…)",
+            "RESEARCH-*.md",
+          ],
+          ["ADR + Diseño", "decide qué se hace y qué NO", "docs/adr/NNN"],
+          [
+            "Refinamiento",
+            "verifica hipótesis del handoff (R26)",
+            "MF-DECISIONS",
+          ],
+          [
+            "PLAN de track",
+            "contrato de ejecución (§1–§7, DoD)",
+            "briefs/PLAN-*",
+          ],
+          [
+            "Desarrollo + TDD",
+            "tests co-located, cross-validation",
+            "código + __tests__",
+          ],
+          [
+            "Ejecución /goal",
+            "Opus orquesta · Sonnet en worktrees",
+            "PRs en draft",
+          ],
+          ["Integración", "merge temporal + CI exacto (R5)", "verde nivel-2"],
+          [
+            "Verificación visual",
+            "gate humano bloqueante (R12)",
+            "OK del director",
+          ],
+          [
+            "Deploy multi-entorno",
+            "local → dev → pre → pro",
+            "release + smoke",
+          ],
+          ["Retro honesta", "grietas con métrica · triage", "RETRO-*.md"],
+          ["Destilación", "patrones → memorias → reglas R#", "feedback_*.md"],
+          ["Handoff", "estado real + prompt de arranque", "HANDOFF-*.md"],
+        ];
+        const C = {
+          v: "#8b5cf6",
+          c: "#22d3ee",
+          pk: "#f472b6",
+          amber: "#fbbf24",
+          green: "#34d399",
+          coral: "#fb7185",
+          blue: "#60a5fa",
+        };
+        const cf = (pc) => (pc >= 85 ? C.green : pc >= 60 ? C.amber : C.coral);
+
+        // ── tooltip de hover compartido (data-tip en cualquier elemento) ──
+        const tip = document.createElement("div");
+        tip.className = "tip";
+        document.body.appendChild(tip);
+        document.addEventListener("mousemove", (e) => {
+          const t = e.target.closest && e.target.closest("[data-tip]");
+          if (t) {
+            tip.innerHTML = t.getAttribute("data-tip");
+            tip.classList.add("on");
+            const pad = 14;
+            const r = tip.getBoundingClientRect();
+            let lx = e.clientX + pad,
+              ty = e.clientY + pad;
+            if (lx + r.width > window.innerWidth - 8)
+              lx = e.clientX - r.width - pad;
+            if (ty + r.height > window.innerHeight - 8)
+              ty = e.clientY - r.height - pad;
+            tip.style.left = lx + "px";
+            tip.style.top = ty + "px";
+          } else {
+            tip.classList.remove("on");
+          }
+        });
+        const NS = "http://www.w3.org/2000/svg";
+        const el = (t, a) => {
+          const e = document.createElementNS(NS, t);
+          for (const k in a) e.setAttribute(k, a[k]);
+          return e;
+        };
+
+        // heatmap
+        const heat = document.getElementById("heat");
+        FEATURES.forEach(([name, pc]) => {
+          const c = cf(pc);
+          const w = document.createElement("div");
+          w.className = "feat";
+          const nm = document.createElement("span");
+          nm.className = "name";
+          nm.textContent = name;
+          const p = document.createElement("span");
+          p.className = "pc";
+          p.style.color = c;
+          p.textContent = pc + "%";
+          const bar = document.createElement("span");
+          bar.className = "bar";
+          const fi = document.createElement("i");
+          fi.style.background = c;
+          fi.dataset.w = pc;
+          bar.appendChild(fi);
+          w.append(nm, p, bar);
+          heat.appendChild(w);
+        });
+
+        // lifecycle timeline
+        const tl = document.getElementById("tl");
+        LIFECYCLE.forEach(([t, d, art], i) => {
+          const ph = document.createElement("div");
+          ph.className = "ph";
+          ph.innerHTML =
+            '<div class="num">' +
+            (i + 1) +
+            '</div><div class="b"><h3>' +
+            t +
+            '</h3> <span class="art">→ ' +
+            art +
+            "</span><p>" +
+            d +
+            "</p></div>";
+          tl.appendChild(ph);
+        });
+
+        // LOC line chart
+        (function () {
+          const W = 460,
+            H = 240,
+            P = { t: 14, r: 14, b: 28, l: 42 },
+            maxY = 40000;
+          const xs = (i) => P.l + (i * (W - P.l - P.r)) / (LOC.length - 1),
+            ys = (v) => H - P.b - (v / maxY) * (H - P.t - P.b);
+          const s = el("svg", {
+            viewBox: `0 0 ${W} ${H}`,
+            width: "100%",
+            style: "max-height:260px",
+          });
+          [0,10000,20000,30000,40000].forEach((v) => {
+            s.appendChild(
+              el("line", {
+                class: "gl",
+                x1: P.l,
+                y1: ys(v),
+                x2: W - P.r,
+                y2: ys(v),
+              }),
+            );
+            const t = el("text", {
+              x: P.l - 6,
+              y: ys(v) + 4,
+              "text-anchor": "end",
+            });
+            t.textContent = v / 1000 + "k";
+            s.appendChild(t);
+          });
+          LOC.forEach((p, i) => {
+            const t = el("text", {
+              x: xs(i),
+              y: H - 9,
+              "text-anchor": "middle",
+            });
+            t.textContent = p.d;
+            s.appendChild(t);
+          });
+          [
+            ["logic", C.v],
+            ["tests", C.c],
+            ["data", C.amber],
+          ].forEach(([k, col]) => {
+            let d = "";
+            LOC.forEach((p, i) => {
+              d += (i ? "L" : "M") + xs(i) + "," + ys(p[k]);
+            });
+            s.appendChild(
+              el("path", {
+                d,
+                fill: "none",
+                stroke: col,
+                "stroke-width": 2.5,
+                "stroke-linejoin": "round",
+                style: "filter:drop-shadow(0 0 5px " + col + "88)",
+              }),
+            );
+            LOC.forEach((p, i) => {
+              s.appendChild(
+                el("circle", { cx: xs(i), cy: ys(p[k]), r: 3.2, fill: col }),
+              );
+              s.appendChild(
+                el("circle", {
+                  cx: xs(i),
+                  cy: ys(p[k]),
+                  r: 9,
+                  fill: "transparent",
+                  "data-tip":
+                    '<span class="tpc" style="background:' +
+                    col +
+                    '"></span><b>' +
+                    p.d +
+                    "</b> · " +
+                    k +
+                    ": " +
+                    p[k].toLocaleString("es-ES") +
+                    " LOC",
+                }),
+              );
+            });
+          });
+          document.getElementById("locChart").appendChild(s);
+        })();
+
+        // autonomy bars
+        (function () {
+          const W = 440,
+            H = 210,
+            P = { t: 16, r: 8, b: 42, l: 24 },
+            maxY = 10;
+          const bw = (W - P.l - P.r) / AUTO.length,
+            ys = (v) => H - P.b - (v / maxY) * (H - P.t - P.b);
+          const s = el("svg", {
+            viewBox: `0 0 ${W} ${H}`,
+            width: "100%",
+            style: "max-height:230px",
+          });
+          const g = el("linearGradient", {
+            id: "bg",
+            x1: "0",
+            y1: "1",
+            x2: "0",
+            y2: "0",
+          });
+          g.appendChild(el("stop", { offset: "0", "stop-color": C.v }));
+          g.appendChild(el("stop", { offset: "1", "stop-color": C.c }));
+          const defs = el("defs", {});
+          defs.appendChild(g);
+          s.appendChild(defs);
+          AUTO.forEach(([label, v], i) => {
+            const x = P.l + i * bw + bw * 0.16,
+              w = bw * 0.68;
+            s.appendChild(
+              el("rect", {
+                x,
+                y: ys(v),
+                width: w,
+                height: H - P.b - ys(v),
+                rx: 4,
+                fill: "url(#bg)",
+                "data-tip":
+                  "<b>" +
+                  label.replace("\n", " ") +
+                  "</b> · " +
+                  v +
+                  " subagentes en paralelo",
+                style: "filter:drop-shadow(0 0 6px rgba(139,92,246,0.4))",
+              }),
+            );
+            const vt = el("text", {
+              x: x + w / 2,
+              y: ys(v) - 5,
+              "text-anchor": "middle",
+              "font-size": "11",
+            });
+            vt.textContent = v;
+            s.appendChild(vt);
+            label.split("\n").forEach((ln, j) => {
+              const lt = el("text", {
+                x: x + w / 2,
+                y: H - 26 + j * 12,
+                "text-anchor": "middle",
+                "font-size": "9",
+              });
+              lt.textContent = ln;
+              s.appendChild(lt);
+            });
+          });
+          document.getElementById("autoChart").appendChild(s);
+        })();
+
+        // PR cumulative line
+        (function () {
+          const W = 440,
+            H = 150,
+            P = { t: 14, r: 12, b: 26, l: 36 },
+            maxY = 120;
+          const xs = (i) => P.l + (i * (W - P.l - P.r)) / (PR.length - 1),
+            ys = (v) => H - P.b - (v / maxY) * (H - P.t - P.b);
+          const s = el("svg", {
+            viewBox: `0 0 ${W} ${H}`,
+            width: "100%",
+            style: "max-height:160px",
+          });
+          [0,40,80,120].forEach((v) => {
+            s.appendChild(
+              el("line", {
+                class: "gl",
+                x1: P.l,
+                y1: ys(v),
+                x2: W - P.r,
+                y2: ys(v),
+              }),
+            );
+            const t = el("text", {
+              x: P.l - 5,
+              y: ys(v) + 4,
+              "text-anchor": "end",
+            });
+            t.textContent = v;
+            s.appendChild(t);
+          });
+          let d = "";
+          PR.forEach((p, i) => {
+            d += (i ? "L" : "M") + xs(i) + "," + ys(p[1]);
+          });
+          let area =
+            d +
+            "L" +
+            xs(PR.length - 1) +
+            "," +
+            ys(0) +
+            "L" +
+            xs(0) +
+            "," +
+            ys(0) +
+            "Z";
+          const gg = el("linearGradient", {
+            id: "pr",
+            x1: "0",
+            y1: "0",
+            x2: "0",
+            y2: "1",
+          });
+          gg.appendChild(
+            el("stop", {
+              offset: "0",
+              "stop-color": C.v,
+              "stop-opacity": "0.35",
+            }),
+          );
+          gg.appendChild(
+            el("stop", { offset: "1", "stop-color": C.v, "stop-opacity": "0" }),
+          );
+          const df = el("defs", {});
+          df.appendChild(gg);
+          s.appendChild(df);
+          s.appendChild(el("path", { d: area, fill: "url(#pr)" }));
+          s.appendChild(
+            el("path", {
+              d,
+              fill: "none",
+              stroke: C.c,
+              "stroke-width": 2.5,
+              style: "filter:drop-shadow(0 0 5px " + C.c + "88)",
+            }),
+          );
+          PR.forEach((p, i) => {
+            s.appendChild(
+              el("circle", { cx: xs(i), cy: ys(p[1]), r: 3, fill: C.c }),
+            );
+            s.appendChild(
+              el("circle", {
+                cx: xs(i),
+                cy: ys(p[1]),
+                r: 11,
+                fill: "transparent",
+                "data-tip": "<b>" + p[0] + "</b> · " + p[1] + " PRs acumulados",
+              }),
+            );
+            const t = el("text", {
+              x: xs(i),
+              y: H - 9,
+              "text-anchor": "middle",
+              "font-size": "9",
+            });
+            t.textContent = p[0];
+            s.appendChild(t);
+          });
+          document.getElementById("prChart").appendChild(s);
+        })();
+
+        // linear status bar — segmentos con % dentro + leyenda detallada
+        (function () {
+          const segs = [["feat",42,"#34d399"],["fix",28,"#fb7185"],["docs",20,"#60a5fa"],["test",10,"#22d3ee"],["refactor",5,"#8b5cf6"],["otros",3,"#94a3b8"]];
+          const total = segs.reduce((a, [, n]) => a + n, 0);
+          const W = 460,
+            H = 46,
+            barH = 40,
+            y = 2,
+            gap = 3,
+            rx = 8;
+          const s = el("svg", {
+            viewBox: `0 0 ${W} ${H}`,
+            width: "100%",
+            style: "max-height:50px",
+          });
+          // gloss vertical (brillo arriba, sombra abajo)
+          const defs = el("defs", {});
+          const gloss = el("linearGradient", {
+            id: "barGloss",
+            x1: "0",
+            y1: "0",
+            x2: "0",
+            y2: "1",
+          });
+          gloss.appendChild(
+            el("stop", {
+              offset: "0",
+              "stop-color": "#fff",
+              "stop-opacity": "0.22",
+            }),
+          );
+          gloss.appendChild(
+            el("stop", {
+              offset: "0.5",
+              "stop-color": "#fff",
+              "stop-opacity": "0.02",
+            }),
+          );
+          gloss.appendChild(
+            el("stop", {
+              offset: "1",
+              "stop-color": "#000",
+              "stop-opacity": "0.12",
+            }),
+          );
+          defs.appendChild(gloss);
+          s.appendChild(defs);
+          let x = 0;
+          segs.forEach(([lab, n, c]) => {
+            const w = (n / total) * W;
+            const ww = Math.max(3, w - gap);
+            const pct = (n / total) * 100;
+            const tipTxt =
+              '<span class="tpc" style="background:' +
+              c +
+              '"></span><b>' +
+              lab +
+              "</b> · " +
+              n +
+              " · " +
+              pct.toLocaleString("es-ES", { maximumFractionDigits: 1 }) +
+              "%";
+            s.appendChild(
+              el("rect", {
+                x,
+                y,
+                width: ww,
+                height: barH,
+                rx,
+                fill: c,
+                "data-tip": tipTxt,
+                style: "filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))",
+              }),
+            );
+            s.appendChild(
+              el("rect", {
+                x,
+                y,
+                width: ww,
+                height: barH,
+                rx,
+                fill: "url(#barGloss)",
+                "data-tip": tipTxt,
+              }),
+            );
+            if (ww >= 30) {
+              const lbl =
+                ww >= 60
+                  ? pct.toFixed(1).replace(".", ",") + "%"
+                  : Math.round(pct) + "%";
+              const t = el("text", {
+                x: x + ww / 2,
+                y: y + barH / 2 + 4.6,
+                "text-anchor": "middle",
+                style:
+                  "font-size:13px;font-weight:800;fill:#fff;paint-order:stroke;stroke:rgba(8,8,15,.35);stroke-width:2.6px;pointer-events:none",
+              });
+              t.textContent = lbl;
+              s.appendChild(t);
+            }
+            x += w;
+          });
+          const container = document.getElementById("linearBar");
+          container.appendChild(s);
+          // leyenda detallada (todos los tramos)
+          const lg = document.createElement("div");
+          lg.className = "legend";
+          lg.style.cssText =
+            "margin-top:.8rem;flex-wrap:wrap;gap:.4rem 1.2rem;justify-content:flex-start";
+          segs.forEach(([lab, n, c]) => {
+            const pct = ((n / total) * 100).toLocaleString("es-ES", {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+            });
+            const sp = document.createElement("span");
+            sp.style.fontSize = "0.82rem";
+            sp.innerHTML =
+              '<i class="sw" style="background:' +
+              c +
+              '"></i> ' +
+              lab +
+              ' <strong style="color:var(--ink)">' +
+              n +
+              "</strong> " +
+              '<span style="color:var(--muted)">· ' +
+              pct +
+              "%</span>";
+            lg.appendChild(sp);
+          });
+          container.appendChild(lg);
+        })();
+
+        // hyperconnectivity — radial tree (3 niveles) animado
+        (function () {
+          const reduce =
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const W = 1120,
+            H = 760,
+            cx = W / 2,
+            cy = H / 2;
+          const R = [0, 150, 292, 372];
+          const HUE = {
+            ia: "#8b5cf6",
+            datos: "#22d3ee",
+            deploy: "#34d399",
+            integr: "#fbbf24",
+            dev: "#f472b6",
+            obs: "#60a5fa",
+          };
+          const TREE = {"name":"Claude Code","children":[{"name":"Hook Stop","col":"#8b5cf6","children":[{"name":"JSONL aggregator"},{"name":"Pricing SSoT (I-6)"},{"name":"Langfuse ingestion"}]},{"name":"Reconciler","col":"#22d3ee","children":[{"name":"Drift classifier (I-11)"},{"name":"systemd · launchd"},{"name":"Ventana 24h (I-5)"}]},{"name":"Stack Langfuse v3","col":"#34d399","children":[{"name":"Cloud Run web+worker"},{"name":"Cloud SQL Postgres"},{"name":"GCE ClickHouse","children":[{"name":"Traces"},{"name":"Observations"}]},{"name":"Memorystore Redis"},{"name":"GCS events bucket"}]},{"name":"LiteLLM Gateway","col":"#fbbf24","children":[{"name":"Virtual keys"},{"name":"Soft budget"},{"name":"Callback Langfuse"},{"name":"Vertex AI (ADR-016)"}]},{"name":"MCP Server","col":"#f472b6","children":[{"name":"stdio JSON-RPC"},{"name":"Tool registry"},{"name":"Sandbox modes"}]},{"name":"Deploy & CI","col":"#60a5fa","children":[{"name":"GitHub Actions"},{"name":"provision-pro.sh"},{"name":"Smoke E2E 8/8"}]}]};
+          const s = el("svg", {
+            viewBox: `0 0 ${W} ${H}`,
+            width: "100%",
+            style: "max-height:600px",
+          });
+          // halo radial detrás del centro
+          const defs = el("defs", {});
+          const halo = el("radialGradient", { id: "hgHalo" });
+          halo.appendChild(
+            el("stop", {
+              offset: "0",
+              "stop-color": "#8b5cf6",
+              "stop-opacity": "0.30",
+            }),
+          );
+          halo.appendChild(
+            el("stop", {
+              offset: "1",
+              "stop-color": "#8b5cf6",
+              "stop-opacity": "0",
+            }),
+          );
+          defs.appendChild(halo);
+          s.appendChild(defs);
+          s.appendChild(el("circle", { cx, cy, r: 230, fill: "url(#hgHalo)" }));
+
+          const leaves = (n) =>
+            n.children ? n.children.reduce((a, c) => a + leaves(c), 0) : 1;
+          const nodes = [],
+            links = [];
+          (function layout(n, a0, a1, depth, col, parent, dom) {
+            const ang = (a0 + a1) / 2;
+            n._a = ang;
+            n._d = depth;
+            n._col = n.col || col || "#c4c9da";
+            n._dom = depth === 1 ? n.name : dom;
+            n._x = cx + R[depth] * Math.cos(ang);
+            n._y = cy + R[depth] * Math.sin(ang);
+            if (parent) links.push([parent, n]);
+            nodes.push(n);
+            if (n.children) {
+              const tot = leaves(n);
+              let a = a0;
+              for (const c of n.children) {
+                const span = ((a1 - a0) * leaves(c)) / tot;
+                layout(c, a, a + span, depth + 1, n._col, n, n._dom);
+                a += span;
+              }
+            }
+          })(TREE, -Math.PI / 2, 1.5 * Math.PI, 0, null, null, null);
+
+          // índice por profundidad → cascada de animación
+          const cnt = {};
+          for (const nd of nodes) {
+            nd._i = cnt[nd._d] = (cnt[nd._d] || 0) + 1;
+          }
+          const delay = (nd) => 0.2 + nd._d * 0.35 + nd._i * 0.035;
+
+          // anillos guía (rotación lenta)
+          const rings = el("g", { class: "hg-rings" });
+          [R[1], R[2], R[3]].forEach((r) =>
+            rings.appendChild(
+              el("circle", {
+                cx,
+                cy,
+                r,
+                fill: "none",
+                stroke: "#ffffff",
+                "stroke-opacity": "0.05",
+                "stroke-dasharray": "2 7",
+              }),
+            ),
+          );
+          s.appendChild(rings);
+
+          // enlaces (dibujado progresivo) + flujo en las arterias (depth 1)
+          for (const [p, c] of links) {
+            const len = Math.hypot(c._x - p._x, c._y - p._y);
+            const d = "M" + p._x + "," + p._y + " L" + c._x + "," + c._y;
+            s.appendChild(
+              el("path", {
+                class: "hg-link",
+                d,
+                stroke: c._col,
+                fill: "none",
+                "stroke-width": c._d === 1 ? 1.7 : c._d === 2 ? 1.1 : 0.8,
+                "stroke-opacity":
+                  c._d === 1 ? "0.55" : c._d === 2 ? "0.34" : "0.24",
+                "stroke-dasharray": len,
+                "stroke-dashoffset": reduce ? 0 : len,
+                style: "animation-delay:" + (delay(c) - 0.1).toFixed(2) + "s",
+              }),
+            );
+            if (c._d === 1)
+              s.appendChild(
+                el("path", {
+                  class: "hg-flow",
+                  d,
+                  stroke: c._col,
+                  fill: "none",
+                  "stroke-width": "2.4",
+                  "stroke-linecap": "round",
+                  "stroke-opacity": "0.9",
+                  "stroke-dasharray": "1.5 13",
+                  style:
+                    "filter:drop-shadow(0 0 4px " +
+                    c._col +
+                    ");animation-delay:" +
+                    (delay(c) + 0.4).toFixed(2) +
+                    "s",
+                }),
+              );
+          }
+
+          // nodos + etiquetas
+          for (const nd of nodes) {
+            if (nd._d === 0) continue;
+            const r = nd._d === 1 ? 7 : nd._d === 2 ? 4.5 : 3.2;
+            const tipTxt =
+              '<span class="tpc" style="background:' +
+              nd._col +
+              '"></span><b>' +
+              nd.name +
+              "</b>" +
+              (nd._d === 1 ? " · dominio" : " · " + nd._dom);
+            s.appendChild(
+              el("circle", {
+                class: "hg-node",
+                cx: nd._x,
+                cy: nd._y,
+                r,
+                fill: nd._col,
+                "fill-opacity": nd._d === 3 ? "0.85" : "1",
+                style:
+                  (nd._d === 1
+                    ? "filter:drop-shadow(0 0 6px " + nd._col + ");"
+                    : "") +
+                  "animation-delay:" +
+                  delay(nd).toFixed(2) +
+                  "s",
+              }),
+            );
+            s.appendChild(
+              el("circle", {
+                cx: nd._x,
+                cy: nd._y,
+                r: Math.max(r + 5, 10),
+                fill: "transparent",
+                "data-tip": tipTxt,
+              }),
+            );
+            const right = Math.cos(nd._a) >= -0.01;
+            const fs = nd._d === 1 ? 13 : nd._d === 2 ? 11 : 9.5;
+            const off = r + 6;
+            const t = el("text", {
+              class: "hg-label",
+              x: nd._x + (right ? off : -off),
+              y: nd._y + fs * 0.34,
+              "text-anchor": right ? "start" : "end",
+              style:
+                "font-size:" +
+                fs +
+                "px;font-weight:" +
+                (nd._d === 1 ? 700 : 400) +
+                ";fill:" +
+                (nd._d === 1
+                  ? "#eef0f8"
+                  : nd._d === 2
+                    ? "#c4c9da"
+                    : "#9aa0b8") +
+                ";animation-delay:" +
+                (delay(nd) + 0.15).toFixed(2) +
+                "s",
+            });
+            t.textContent = nd.name;
+            s.appendChild(t);
+          }
+
+          // pulso del centro (SMIL, salvo reduced-motion)
+          const glow = el("circle", {
+            cx,
+            cy,
+            r: 52,
+            fill: "none",
+            stroke: "#8b5cf6",
+            "stroke-width": "1.2",
+            "stroke-opacity": "0.5",
+          });
+          if (!reduce) {
+            glow.appendChild(
+              el("animate", {
+                attributeName: "r",
+                values: "50;66;50",
+                dur: "3.4s",
+                repeatCount: "indefinite",
+              }),
+            );
+            glow.appendChild(
+              el("animate", {
+                attributeName: "stroke-opacity",
+                values: "0.55;0.08;0.55",
+                dur: "3.4s",
+                repeatCount: "indefinite",
+              }),
+            );
+          }
+          s.appendChild(glow);
+
+          // núcleo (Claude Code)
+          s.appendChild(
+            el("circle", {
+              cx,
+              cy,
+              r: 46,
+              fill: "rgba(139,92,246,0.14)",
+              stroke: "#8b5cf6",
+              "stroke-width": 1.5,
+              style: "filter:drop-shadow(0 0 18px rgba(139,92,246,0.6))",
+            }),
+          );
+          const t1 = el("text", {
+            x: cx,
+            y: cy - 1,
+            "text-anchor": "middle",
+            style: "font-size:16px;font-weight:800;fill:#fff",
+          });
+          t1.textContent = "Claude Code";
+          s.appendChild(t1);
+          const t2 = el("text", {
+            x: cx,
+            y: cy + 16,
+            "text-anchor": "middle",
+            style: "font-size:10px;fill:#9aa0b8",
+          });
+          t2.textContent = "1 punto de control · CLI";
+          s.appendChild(t2);
+          document.getElementById("hyperGraph").appendChild(s);
+        })();
+
+        function countUp(node) {
+          if (node.dataset.done) return;
+          node.dataset.done = "1";
+          const target = parseFloat(node.dataset.count),
+            dec = parseInt(node.dataset.dec || "0", 10);
+          const pre = node.dataset.prefix || "",
+            suf = node.dataset.suffix || "";
+          const fmt = (v) =>
+            (dec ? v.toFixed(dec) : Math.round(v)).toLocaleString("es-ES");
+          const dur = 1100,
+            t0 = performance.now();
+          const step = (now) => {
+            const k = Math.min(1, (now - t0) / dur);
+            const e = 1 - Math.pow(1 - k, 3);
+            node.textContent = pre + fmt(target * e) + suf;
+            if (k < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+
+        function revealEl(t) {
+          if (t.classList.contains("in")) return;
+          t.classList.add("in");
+          t.querySelectorAll?.("[data-count]").forEach(countUp);
+          t.querySelectorAll?.(".feat .bar > i").forEach((i) => {
+            i.style.width = i.dataset.w + "%";
+          });
+        }
+        const targets = [...document.querySelectorAll(".reveal")];
+        const io = new IntersectionObserver(
+          (es) => {
+            for (const e of es)
+              if (e.isIntersecting) {
+                revealEl(e.target);
+                io.unobserve(e.target);
+              }
+          },
+          { threshold: 0.12 },
+        );
+        targets.forEach((n) => io.observe(n));
+        document.querySelectorAll(".hero [data-count]").forEach(countUp);
+        function revealVisible() {
+          const vh =
+            window.innerHeight || document.documentElement.clientHeight;
+          for (const t of targets) {
+            if (t.classList.contains("in")) continue;
+            const r = t.getBoundingClientRect();
+            if (r.top < vh * 0.92 && r.bottom > 0) revealEl(t);
+          }
+        }
+
+        const nav = document.getElementById("nav"),
+          sb = document.getElementById("scrollbar");
+        const onScroll = () => {
+          const h = document.documentElement;
+          sb.style.width =
+            (h.scrollTop / (h.scrollHeight - h.clientHeight || 1)) * 100 + "%";
+          nav.classList.toggle("solid", h.scrollTop > 40);
+          revealVisible();
+        };
+        document.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("hashchange", () =>
+          setTimeout(revealVisible, 60),
+        );
+        document
+          .querySelectorAll("nav.links a")
+          .forEach((a) =>
+            a.addEventListener("click", () => setTimeout(revealVisible, 80)),
+          );
+        onScroll();
+      })();
+    </script>
+  </body>
+</html>
