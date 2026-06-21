@@ -56,10 +56,14 @@ Derivados de la estructura real del repo (handoff §2 + mapa de arquitectura), *
 
 ### 4.1 · PBIs técnicos abiertos (derivados del scorecard — trabajo de código real)
 
+> **Decisión G1 (Joserra, 2026-06-21)**: el `/goal` autónomo **IMPLEMENTA los 3** en esta tirada
+> (con PR cada uno), no solo los puebla. → la condición `/goal` incluye umbral de PRs (R26 confirmó
+> 3 PBIs con trabajo genuino). Branch naming `ATL-N-...` por PBI para auto-link.
+
 | PBI                                                                                                        | Origen       | Épica | Size | Blast | Label        |
 | ---------------------------------------------------------------------------------------------------------- | ------------ | ----- | ---- | ----- | ------------ |
 | Redondeo defensivo de coste al serializar (`Math.round(c*100)/100`)                                        | ADR-018 / D2 | E0/E1 | S    | LOW   | `agent-task` |
-| Unificar logging del hook a JSON estructurado (`process.stderr.write` plano → `emitDegradation`/`logInfo`) | D4           | E1    | S    | LOW   | `agent-task` |
+| Unificar logging del hook a JSON estructurado (`process.stderr.write` plano → `emitDegradation`/`logInfo`) | ADR-019 / D4 | E1    | S    | LOW   | `agent-task` |
 | Deploy automation `workflow_run` + smoke post-deploy automatizado                                          | D6           | E3    | M    | LOW   | `agent-task` |
 
 ### 4.2 · Backlog operativo / coordinación (post-v1 abierto, NO bloqueado por código)

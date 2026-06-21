@@ -119,7 +119,7 @@ Aplicables (no ⚪): **D1, D2, D3, D4, D5, D6, D7, D9** = 8 dimensiones.
 | --- | --------------------------------------- | --------- | -------------------------------------------------------------------------------------------------- |
 | 1   | **Sin gobernanza Linear** (D7)          | ALTA      | **Proyecto Linear "Langfuse Bridge" poblado** (épicas + PBIs /goal-ready) — núcleo del intake      |
 | 2   | **Coste en float, no cents** (D2)       | MEDIA     | **ADR-018** (modelo de coste: float aceptado con `COST_EPSILON` vs migración a microdólares) + PBI |
-| 3   | **Logging del hook inconsistente** (D4) | BAJA      | PBI: unificar `process.stderr.write` plano → `emitDegradation`/`logInfo` JSON                      |
+| 3   | **Logging del hook inconsistente** (D4) | BAJA      | **ADR-019** (logging estándar JSON del bridge) + PBI: unificar `process.stderr.write` → `logInfo`  |
 | 4   | **Sin corpus de retros** (D7)           | MEDIA     | Arrancar `retro-review` (handoff a `atlax-project-state`)                                          |
 | 5   | **Deploy automation manual** (D6)       | BAJA      | PBI (mejora): `workflow_run` + smoke post-deploy automatizado                                      |
 
