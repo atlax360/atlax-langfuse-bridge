@@ -33,3 +33,34 @@ export function emitDegradation(source: string, err: unknown): void {
   };
   process.stderr.write(JSON.stringify(entry) + "\n");
 }
+
+export interface InfoEntry {
+  type: "info";
+  source: string;
+  message: string;
+  ts: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Emite un log informativo estructurado (JSON línea-a-línea) a stderr.
+ *
+ * ADR-019: todo logging del bridge es JSON estructurado. El `message` es
+ * estático (sin interpolación de variables — van en `context`) para que un
+ * agregador agrupe por mensaje y `jq` filtre por campos. Nunca lanza ni escribe
+ * a stdout (interferiría con hooks downstream); respeta I-1.
+ */
+export function logInfo(
+  source: string,
+  message: string,
+  context?: Record<string, unknown>,
+): void {
+  const entry: InfoEntry = {
+    type: "info",
+    source,
+    message,
+    ...context,
+    ts: new Date().toISOString(),
+  };
+  process.stderr.write(JSON.stringify(entry) + "\n");
+}

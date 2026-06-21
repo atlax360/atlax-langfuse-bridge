@@ -1,5 +1,10 @@
 import { describe, expect, test, beforeEach, afterEach, spyOn } from "bun:test";
-import { emitDegradation, type DegradationEntry } from "./degradation";
+import {
+  emitDegradation,
+  logInfo,
+  type DegradationEntry,
+  type InfoEntry,
+} from "./degradation";
 
 describe("emitDegradation", () => {
   const written: string[] = [];
@@ -57,5 +62,57 @@ describe("emitDegradation", () => {
     const b = JSON.parse(written[1]!) as DegradationEntry;
     expect(a.source).toBe("source-a");
     expect(b.source).toBe("source-b");
+  });
+});
+
+describe("logInfo (ADR-019)", () => {
+  const written: string[] = [];
+  let spy: ReturnType<typeof spyOn>;
+
+  beforeEach(() => {
+    written.length = 0;
+    spy = spyOn(process.stderr, "write").mockImplementation((s: unknown) => {
+      written.push(String(s));
+      return true;
+    });
+  });
+
+  afterEach(() => {
+    spy.mockRestore();
+  });
+
+  test("emits a parseable JSON line of type info", () => {
+    logInfo("test:source", "algo informativo");
+    expect(written).toHaveLength(1);
+    const parsed = JSON.parse(written[0]!) as InfoEntry;
+    expect(parsed.type).toBe("info");
+    expect(parsed.source).toBe("test:source");
+    expect(parsed.message).toBe("algo informativo");
+    expect(parsed.ts).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  test("message stays static; variables go in context fields", () => {
+    logInfo("sync:turn", "turn procesado", { turns: 3, model: "opus" });
+    const parsed = JSON.parse(written[0]!) as InfoEntry;
+    // El mensaje no lleva interpolación (agrupable por agregador)
+    expect(parsed.message).toBe("turn procesado");
+    // El contexto va en campos separados, queryables por jq
+    expect(parsed["turns"]).toBe(3);
+    expect(parsed["model"]).toBe("opus");
+  });
+
+  test("writes exactly one newline-terminated line", () => {
+    logInfo("x", "y");
+    expect(written).toHaveLength(1);
+    expect(written[0]!.endsWith("\n")).toBe(true);
+    // Exactamente una línea: sin saltos internos que rompan jq línea-a-línea
+    expect(written[0]!.trimEnd().includes("\n")).toBe(false);
+  });
+
+  test("output is always valid JSON even with special chars in context", () => {
+    logInfo("x", "msg", { path: 'a\nb\t"quote"' });
+    expect(() => JSON.parse(written[0]!)).not.toThrow();
+    const parsed = JSON.parse(written[0]!) as InfoEntry;
+    expect(parsed["path"]).toBe('a\nb\t"quote"');
   });
 });
