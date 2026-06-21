@@ -1,0 +1,68 @@
+date,category,label,detail,source
+2026-04-22,milestone,Fundación del proyecto,Proyecto creado de cero: reconciler + tier + pricing + LiteLLM M1 + 68 tests en un día,PR#1-#4
+2026-04-22,rule-born,Invariantes I-1 a I-6 desde día 0,Hook exit 0 / idempotencia / cwd / tags UNION / ventana / pricing SSoT declaradas en PR#1,PR#1
+2026-04-22,debt,I-6 mergeada rota en PR#1,MODEL_PRICING duplicado en 3 sitios en el mismo PR que declara el invariante; corregida 9 min después,PR#1 → PR#2
+2026-04-22,debt,Systemd timer sin instalar al merge,PR#1 dejó checkboxes operacionales vacíos; timer quedó sin activar en esa sesión,PR#1
+2026-04-23,milestone,LiteLLM M2+M3 en 90 min,Callback Langfuse + virtual keys + alertas Slack cerrados en 2 PRs consecutivos,PR#5-#6
+2026-04-23,debt,Smoke E2E M2 diferido post-merge,Trazabilidad LiteLLM→Langfuse no verificada antes del merge; marcada como post-merge,PR#5
+2026-04-24,milestone,MCP server + AgentTool registry,MCP stdio JSON-RPC + tool registry + sandbox modes + 175 tests tras cerrar backlog Orvian 6/6,PR#7-#9
+2026-04-24,debt,tier-cache mergeado sin consumidor,shared/tier-cache.ts mergeada sin integrarse en hook ni reconciler; consumidor planificado para iteración futura,PR#7
+2026-04-26,milestone,CI + tests: 0 → 354 en una jornada,GitHub Actions + typecheck strict + 354 tests en 9 PRs secuenciales; coverage 78% → 89%,PR#10-#18
+2026-04-26,debt,CI creado después del código inicial,tsconfig.json y package.json creados en PR#13 cuando ya había 10 archivos en el repo,PR#11-#13
+2026-04-26,fix-of-fix,cherry-pick manual entre ramas deuda,Sprint-2 bifurcado antes de que sprint-1 mergeara; recovery por cherry-pick documentado,PR#13-#14
+2026-04-26,rule-born,Cross-validation I-6 en CI,Test pricing.test.ts verifica sync extensión vs shared/model-pricing.ts; invariante I-6 ahora testeable,PR#12
+2026-04-27,milestone,65 findings seguridad cerrados,Audit CRITICAL→LOW liquidado: tsconfig strict +5 flags + I-13 en CI + PRO migration scaffolding,PR#19-#29
+2026-04-27,fix-of-fix,optional_host_permissions revertida y re-añadida,PR#20 eliminó el campo; PR#25 lo restituyó 1h46min después; mismo fichero decisiones opuestas,PR#20 → PR#25
+2026-04-27,rule-born,Invariante I-13 edge/core en CI,cloud-run-boundary.test.ts con 17 tests impide que reconciler/hook migren a Cloud Run,PR#27
+2026-04-28,incident,INC-001 docker compose down -v,Pérdida de ~3 semanas de trazas por agente que ejecutó destrucción de volúmenes sin confirmación,ADR-008
+2026-04-28,milestone,PreToolUse hook anti-destrucción,Hook bloquea docker down -v y operaciones destructivas sobre datos Langfuse; 21 tests,PR#39
+2026-04-28,milestone,ADR-008 + INC-001 en runbook,Incidente formalizado con límite matemático recovery y plantilla canónica de incidentes,PR#38 PR#40
+2026-04-28,debt,Mitigación técnica tardó 6 días,PreToolUse hook mergeado 6 días después del incidente INC-001; vector activo durante ese período,PR#39
+2026-04-29,milestone,pilot-onboarding.sh para 37 devs,Script standalone curl|bash con idempotencia; elimina fricción de instalación manual del hook,PR#41
+2026-04-29,milestone,581 tests / 981 assertions,Coverage gap consolidation con subprocess tests para os.homedir() inmutable,PR#42
+2026-04-29,debt,Script no testeado en máquina limpia,pilot-onboarding.sh mergeado con checkboxes "verificar en máquina limpia" sin marcar,PR#41
+2026-05-06,debt,Upgrade Docker sin PR a main,Langfuse 3.171.0 → 3.172.1 commiteado directo a main sin PR; rompe disciplina branch protection,commit 550aaac
+2026-05-06,fix-of-fix,Postgres healthcheck SELECT 1 real,pg_isready insuficiente: Prisma P1001 en arranques fríos; fix con query real en healthcheck,PR#43
+2026-05-07,milestone,Fix crítico coste 0 → real,hook construía generations con schema legacy v3; calculatedTotalCost era 0 desde el inicio del proyecto,PR#45
+2026-05-07,milestone,Roadmap Q2-Q3 planificado y ejecutado,8 sprints S17-S24 planificados y ejecutados íntegros el mismo día; 776 tests al cierre,PR#46-#63
+2026-05-07,milestone,Backfill 96 sesiones históricas,script one-shot procesó 96 candidatos; 90 uploaded; 0 failed; mes adicional de historia recuperado,PR#47
+2026-05-07,rule-born,ADR-011 + I-14 paralelismo agéntico,Blast Radius Matrix + N≤5 read-only / N≤3 write + doble-check obligatorio institucionalizados,PR#49
+2026-05-07,enroque,Roadmap 8 semanas ejecutado en 8 horas,Items estimados S/M ejecutados en fracción del tiempo; sizing no calibrado para modo centauro,[inferido]
+2026-05-07,fix-of-fix,Trace name langfuse-sync → claude-code-session,Doc de dashboard usaba nombre incorrecto; fix en PR#61 30 min después del PR#60 que lo introdujo,PR#60 → PR#61
+2026-05-07,debt,Decisión Admin API key sin governance,ANTHROPIC_ADMIN_API_KEY integrada en PR#54 sin registro de quién la autorizó ni cuándo,PR#54
+2026-05-07,debt,Tests LiteLLM skip condicional en CI,LiteLLM M1/M2/M3 validados solo localmente con stack; 776 tests incluye skipped no contados,PR#51 PR#55 PR#58
+2026-05-08,milestone,Audit 360º pre-onboarding 13 devs,47 hallazgos: path traversal + puertos LAN + 12 reglas cross-project formalizadas,PR#65-#67
+2026-05-08,fix-of-fix,cost_report sin group_by silenciaba divergencia,getCostReport sin groupBy: model:null → sumCostByModel → __non_token__ → reconciler ciego,$14.788/sem invisible; PR#68
+2026-05-08,rule-born,Reglas cross-project desde audit,security.md + testing.md + cross-project-patterns.md formalizadas; aplican todos los proyectos Atlax,PR#67
+2026-05-08,incident,Crash CC + pérdida validate-consistency.ts,Claude Code crasheó; script de 700 líneas en /tmp perdido; recreado a 270 líneas post-crash,PR#70
+2026-05-08,debt,Bug silencioso coste semanas en producción,cost_report sin groupBy activo desde implementación S18-B; semanas sin verificación real de costes,PR#68
+2026-05-08,milestone,Plan PRO formal + ADR-012 ClickHouse GCE,cloud-run-deployment-plan.md + ADR-012; arquitectura PRO documentada antes del despliegue,PR#69
+2026-05-09,milestone,Smoke baseline 8/8 antes de F1 PRO,smoke-mcp-e2e.ts pasó 8/8 checks contra Langfuse self-hosted; primera vez en Atlax 360,feedback_smoke_baseline_pre_pro.md
+2026-05-09,rule-born,Smoke test del baseline bloqueante pre-PRO,Regla global CLAUDE.md: sin smoke funcional E2E verificado NO se despliega a PRE/PRO. Origen esta jornada,PR#73 + memoria
+2026-05-09,gate-external,Gate billing GCP organizacional,billing.resourceAssociations.create faltante para jgcalvo; necesita frsalas/mmontes/jmsanchez,feedback_gcp_billing_org_gate.md
+2026-05-09,fix-of-fix,provision-pro.sh 3 bugs en cascada,CIDR misalignment + Cloud SQL ENTERPRISE_PLUS + HMAC positional; 3 PRs en 30 min en entorno real,PR#79 PR#80 PR#81
+2026-05-09,rule-born,Naming canónico GCP atlax360-ai-*,atlax360-ai-purpose-env adoptado con guard CI tests/naming-convention.test.ts antes de provisionar,PR#73
+2026-05-10,milestone,PRO activo con backups verificados,Langfuse v3 en langfuse.atlax360.ai; drill backup 3 checks ejecutado el mismo día del cutover,PR#82-#96
+2026-05-10,milestone,LiteLLM Cloud Run PRO M1 piloto,Gateway activo en Cloud Run con alertas Google Chat + budget 230 EUR/mes + virtual keys,PR#91-#93
+2026-05-10,enroque,LiteLLM 3 deploys fallidos antes de funcionar,ghcr.io rechazado + subPath no soportado + OOM 1Gi silencioso; cuarto intento funcionó con 2Gi,feedback_cloud_run_litellm_quirks.md
+2026-05-10,debt,ingress:all en producción 7 horas,cloud-run.yaml con ingress:all desde PR#83 (07:07) hasta PR#84 (12:51); endpoint .run.app expuesto,PR#83 → PR#84
+2026-05-10,debt,Red default GCP activa con SSH 0.0.0.0/0,Red default no eliminada al provisionar; SSH abierto a LAN hasta PR#82 del día 10,PR#82
+2026-05-10,rule-born,ADR-013/014/015 infra GCP formalizada,Serverless NEG allUsers + Cloud SQL private-only IAP + backups PRO documentados el día del hallazgo,PR#89
+2026-05-11,milestone,v1.0.0 sellado con audit 4 agentes,38 hallazgos brutos → 14 fixes reales + I-15 SAFE_SID_RE + ADR-017 TLS + 1054 tests,PR#103-#105
+2026-05-11,rule-born,I-15 validación SAFE_SID_RE,session_id pasa SAFE_SID_RE antes de construir traceId; cierra vector corrupción ClickHouse,PR#105
+2026-05-11,rule-born,ADR-017 TLS bypass documentado,NODE_TLS_REJECT_UNAUTHORIZED=0 con justificación Memorystore VPC privada; anti-pattern → decisión consciente,PR#105
+2026-05-11,milestone,Upgrade Langfuse 3.173.0 DEV→PRO 28 min,Primer upgrade PRO con trace detallado; smoke 8/8 DEV y PRO; playbook reproducible,PR#106-#108
+2026-05-11,enroque,Aserción tautológica C1 en cobertura,length >= 0 siempre true; introducida PR#101 09:38; detectada en audit PR#105 14:34; ciclo 5h,PR#101 → PR#105
+2026-05-11,fix-of-fix,3 fixes typecheck en tests del sprint,spyOn sentencia única + DegradationEntry sin import + url sin tipar; PR#99 corrige errores de PR#97,PR#97 → PR#99
+2026-05-11,debt,5 skip tests honestos descubiertos,return void expect(true).toBe(true) inflaba métricas; 1043 pass reportado era en realidad menor,PR#105
+2026-05-11,debt,Env DEV/PRO mezclado en reconcile.env,~/.atlax-ai/reconcile.env apuntaba a PRO durante smoke DEV; riesgo 2 días post-deploy,PR#108
+2026-05-19,milestone,deps alineadas ecosistema Atlax 360,zod 3.24→4.4.3 + typescript 5.4→5.9.3; drift cross-proyecto cerrado; PR body con análisis técnico,PR#109
+2026-05-19,debt,CI audit gate llegó al día siguiente,bun audit no estaba en CI del bridge; gap detectado por audit bisemanal externo; añadido PR#110,PR#109 → PR#110
+2026-05-20,rule-born,bun audit en CI cross-Atlax,bun audit --audit-level=high añadido al job test; paridad con kairos/harvest/atlax-claude-dashboard,PR#110
+2026-06-21,milestone,Intake brownfield + scorecard 81%,/atlax-intake brownfield: D1-D10 evaluados; 2 gaps bloqueantes; 23 issues Linear; 3 ADRs,PR#111-#112
+2026-06-21,milestone,Smoke PRO funcional round-trip,smoke-langfuse-pro-e2e.ts: POST trace → Worker async → ClickHouse → round-trip real verificado,PR#115
+2026-06-21,rule-born,ADR-018 float aceptado para coste estimado,Coste estimado no es dinero transaccional; float con COST_EPSILON y redondeo display aceptado,PR#112-#113
+2026-06-21,rule-born,ADR-019 logging JSON estructurado bridge,logInfo() a shared/degradation.ts; migración 2 process.stderr.write planos en hook,PR#114
+2026-06-21,rule-born,ADR-020 deploy PRO manual deliberado,Deploy stateful infra sin automatización CI; smoke post-deploy como gate obligatorio,PR#115
+2026-06-21,debt,23 issues Linear sin sprint asignado,Backlog creado sin priorización; 20 de 23 issues sin sprint; tarea próxima sesión,PR#112
+2026-06-21,enroque,Conflicto merge ATL-377/ATL-378 predecible,Dos PBIs en langfuse-sync.ts sin blast-radius check previo; detectado al rebase no al planificar,PR#113 PR#114
