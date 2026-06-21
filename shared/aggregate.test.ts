@@ -2,7 +2,7 @@ import { describe, expect, test, afterEach } from "bun:test";
 import { writeFileSync, mkdtempSync, rmSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { aggregateLines, aggregate } from "./aggregate";
+import { aggregateLines, aggregate, roundCostDisplay } from "./aggregate";
 
 // ─── Fixture lines (matches tests/fixtures/session.jsonl) ───────────────────
 
@@ -150,5 +150,34 @@ describe("aggregate() — filesystem wrapper", () => {
 
   test("throws on non-existent file", () => {
     expect(() => aggregate("/tmp/nonexistent-agg-test-file.jsonl")).toThrow();
+  });
+});
+
+describe("roundCostDisplay (ADR-018)", () => {
+  test("redondea a 2 decimales (céntimos de USD)", () => {
+    expect(roundCostDisplay(1.23456)).toBe(1.23);
+    expect(roundCostDisplay(1.235)).toBe(1.24); // half-up
+    expect(roundCostDisplay(408.96789)).toBe(408.97);
+  });
+
+  test("elimina ruido IEEE-754 del display", () => {
+    // Caso-malo: float con ruido que NO debe aparecer en un resumen humano.
+    const noisy = 0.1 + 0.2; // 0.30000000000000004
+    expect(noisy).not.toBe(0.3); // confirma que el ruido existe sin el helper
+    expect(roundCostDisplay(noisy)).toBe(0.3); // el helper lo limpia
+  });
+
+  test("el resultado nunca tiene más de 2 decimales (DoD)", () => {
+    for (const c of [0.001, 1.999, 12.34567, 0.30000000000000004, 999.9999]) {
+      const rounded = roundCostDisplay(c);
+      // nº de decimales del resultado serializado ≤ 2
+      const decimals = (rounded.toString().split(".")[1] ?? "").length;
+      expect(decimals).toBeLessThanOrEqual(2);
+    }
+  });
+
+  test("0 y enteros pasan sin cambio", () => {
+    expect(roundCostDisplay(0)).toBe(0);
+    expect(roundCostDisplay(5)).toBe(5);
   });
 });
