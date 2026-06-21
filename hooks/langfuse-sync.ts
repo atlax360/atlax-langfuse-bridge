@@ -16,7 +16,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { getPricing } from "../shared/model-pricing";
 import { aggregateLines, roundCostDisplay } from "../shared/aggregate";
-import { emitDegradation } from "../shared/degradation";
+import { emitDegradation, logInfo } from "../shared/degradation";
 import { isSafeHost } from "../shared/langfuse-client";
 import { SAFE_SID_RE, safeFilePath } from "../shared/validation";
 
@@ -225,8 +225,9 @@ export async function sendToLangfuse(batch: unknown[]): Promise<void> {
   const secretKey = process.env["LANGFUSE_SECRET_KEY"];
 
   if (!publicKey || !secretKey) {
-    process.stderr.write(
-      "[langfuse-sync] LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY no configurados\n",
+    logInfo(
+      "sendToLangfuse:missing-credentials",
+      "LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY no configurados",
     );
     return;
   }
@@ -499,9 +500,7 @@ async function main(): Promise<void> {
 
 if (import.meta.main) {
   main().catch((err: Error) => {
-    process.stderr.write(
-      `[langfuse-sync] Error no controlado: ${err.message}\n`,
-    );
-    process.exit(0); // siempre exit 0 — no bloquear Claude Code
+    emitDegradation("main:uncaught", err);
+    process.exit(0); // siempre exit 0 — no bloquear Claude Code (I-1)
   });
 }
