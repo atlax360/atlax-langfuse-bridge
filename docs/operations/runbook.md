@@ -946,3 +946,46 @@ ni backup automático previo.
 `ARCHITECTURE.md §12` — resuelto estructuralmente en PRO con Cloud SQL PITR.
 
 **ADR relacionado**: [ADR-008](../adr/ADR-008-consistency-bounds.md)
+
+---
+
+## Deploy del stack server-only PRO (manual + smoke gate)
+
+> El deploy del stack Langfuse v3 PRO (Cloud Run + Cloud SQL + ClickHouse GCE) es
+> **manual deliberadamente** — ver [ADR-020](../adr/ADR-020-deploy-pro-manual-con-smoke-gate.md).
+> Un auto-deploy tras cada merge sería arriesgado sobre infra con estado. El
+> **smoke post-deploy funcional es el gate obligatorio**, no opcional.
+
+### Procedimiento de deploy
+
+```bash
+# 1. (opcional) preview idempotente del provisioning de infra
+bun run infra/provision-pro.sh --dry-run   # o: bash infra/provision-pro.sh --dry-run
+
+# 2. desplegar los servicios Cloud Run (web / worker / litellm)
+gcloud run services replace infra/cloud-run.yaml --project atlax360-ai-langfuse-pro
+
+# 3. GATE OBLIGATORIO — smoke post-deploy funcional (round-trip de ingestión, no solo /health)
+bun run scripts/smoke-langfuse-pro-e2e.ts     # stack web (ingest→worker→ClickHouse)
+bun run scripts/smoke-litellm-pro-e2e.ts      # gateway LiteLLM (si se tocó litellm)
+
+# 4. pegar el output de los smokes en el PR/issue del deploy (regla Smoke Test del Baseline)
+```
+
+### Smoke post-deploy `smoke-langfuse-pro-e2e.ts`
+
+Verifica `https://langfuse.atlax360.ai` con 3 checks:
+
+1. `GET /api/public/health` → 200 (liveness del stack web).
+2. `POST /api/public/ingestion` → un trace sintético `cc-smoke-<ts>`.
+3. **Round-trip**: poll hasta que el worker async procese el trace y sea visible
+   vía `GET /api/public/traces/<id>` (Langfuse v3 ingestion es asíncrono, ~12-15s).
+
+Skip-graceful sin `LANGFUSE_PRO_PK`/`LANGFUSE_PRO_SK` (exit 0). Exit 1 si algún check falla.
+
+**Por qué round-trip y no solo /health**: un 200 en `/health` no prueba que el pipeline
+async (worker→ClickHouse) funcione. El smoke valida side-effects observables, no el ack
+del primer hop.
+
+**Verificación periódica**: el audit bisemanal Atlax (§4.5) comprueba que el endpoint PRO
+responde con datos frescos — cubre el "deploy gap" silencioso entre deploys.
